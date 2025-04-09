@@ -1,95 +1,69 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import React from 'react';
+import styles from './page.module.css';
+import NavigationDrawer from '../components/NavigationDrawer';
+import InteractiveListingCard from '../components/InteractiveListingCard';
 
-export default function SignIn() {
+export default function Home() {
+  // Mock data for featured listings
+  const featuredListings = [
+    {
+      title: 'Arduino Uno',
+      price: 25.99,
+      description: 'Brand new Arduino Uno R3 board, perfect for electronics projects.',
+      image: '/placeholder.jpg',
+      location: 'Engineering Building',
+      condition: 'New',
+      category: 'Microcontrollers'
+    },
+    {
+      title: 'Raspberry Pi 4',
+      price: 45.99,
+      description: '4GB RAM model, barely used, comes with case and power supply.',
+      image: '/placeholder.jpg',
+      location: 'Computer Lab',
+      condition: 'Used - Like New',
+      category: 'Single Board Computers'
+    }
+  ];
+
   return (
-    <div className={styles.page}>
+    <div className={styles.container}>
+      <NavigationDrawer />
+      
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <h1 className={styles.title}>Welcome to voltVillage</h1>
+        <p className={styles.description}>
+          Your marketplace for engineering components
+        </p>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+        <div className={styles.searchSection}>
+          <input 
+            type="text" 
+            placeholder="Search for components..."
+            className={styles.searchInput}
+          />
+          <button className={styles.searchButton}>Search</button>
         </div>
+
+        <section className={styles.featuredSection}>
+          <h2>Featured Listings</h2>
+          <div className={styles.grid}>
+            {featuredListings.map((listing, index) => (
+              <InteractiveListingCard key={index} item={listing} />
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.categoriesSection}>
+          <h2>Browse Categories</h2>
+          <div className={styles.categoryGrid}>
+            <div className={styles.categoryCard}>Microcontrollers</div>
+            <div className={styles.categoryCard}>Components</div>
+            <div className={styles.categoryCard}>Test Equipment</div>
+            <div className={styles.categoryCard}>Tools</div>
+          </div>
+        </section>
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
