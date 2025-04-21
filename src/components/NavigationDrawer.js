@@ -1,10 +1,20 @@
-"use client"
+'use client';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '../app/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import styles from './NavigationDrawer.module.css';
 
 const NavigationDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/SignIn');
+  };
 
   return (
     <>
@@ -22,18 +32,34 @@ const NavigationDrawer = () => {
             <Link href="/listings" className={styles.navLink}>
               <i className="fas fa-tags"></i> Listings
             </Link>
-            <Link href="/requests" className={styles.navLink}>
-              <i className="fas fa-bullhorn"></i> Requests
-            </Link>
-            <Link href="/messages" className={styles.navLink}>
-              <i className="fas fa-envelope"></i> Messages
-            </Link>
-            <Link href="/cart" className={styles.navLink}>
-              <i className="fas fa-shopping-cart"></i> Cart
-            </Link>
-            <Link href="/profile" className={styles.navLink}>
-              <i className="fas fa-user"></i> Profile
-            </Link>
+            {user && (
+              <>
+                <Link href="/manage-listings" className={styles.navLink}>
+                  <i className="fas fa-cogs"></i> Manage Listings
+                </Link>
+                <Link href="/requests" className={styles.navLink}>
+                  <i className="fas fa-bullhorn"></i> Requests
+                </Link>
+                <Link href="/messages" className={styles.navLink}>
+                  <i className="fas fa-envelope"></i> Messages
+                </Link>
+                <Link href="/cart" className={styles.navLink}>
+                  <i className="fas fa-shopping-cart"></i> Cart
+                </Link>
+                <Link href="/profile" className={styles.navLink}>
+                  <i className="fas fa-user"></i> Profile
+                </Link>
+              </>
+            )}
+            {user ? (
+              <button onClick={handleLogout} className={styles.logoutButton}>
+                Logout
+              </button>
+            ) : (
+              <button onClick={() => router.push('/SignIn')} className={styles.loginButton}>
+                Sign In
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -64,18 +90,34 @@ const NavigationDrawer = () => {
           <Link href="/listings" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
             <i className="fas fa-tags"></i> Listings
           </Link>
-          <Link href="/requests" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-bullhorn"></i> Requests
-          </Link>
-          <Link href="/messages" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-envelope"></i> Messages
-          </Link>
-          <Link href="/cart" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-shopping-cart"></i> Cart
-          </Link>
-          <Link href="/profile" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-user"></i> Profile
-          </Link>
+          {user && (
+            <>
+              <Link href="/manage-listings" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
+                <i className="fas fa-cogs"></i> Manage Listings
+              </Link>
+              <Link href="/requests" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
+                <i className="fas fa-bullhorn"></i> Requests
+              </Link>
+              <Link href="/messages" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
+                <i className="fas fa-envelope"></i> Messages
+              </Link>
+              <Link href="/cart" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
+                <i className="fas fa-shopping-cart"></i> Cart
+              </Link>
+              <Link href="/profile" className={styles.mobileLink} onClick={() => setIsOpen(false)}>
+                <i className="fas fa-user"></i> Profile
+              </Link>
+            </>
+          )}
+          {user ? (
+            <button onClick={handleLogout} className={styles.mobileLogoutButton}>
+              Logout
+            </button>
+          ) : (
+            <button onClick={() => { setIsOpen(false); router.push('/SignIn'); }} className={styles.mobileLoginButton}>
+              Sign In
+            </button>
+          )}
         </div>
       </div>
 
@@ -90,4 +132,4 @@ const NavigationDrawer = () => {
   );
 };
 
-export default NavigationDrawer; 
+export default NavigationDrawer;

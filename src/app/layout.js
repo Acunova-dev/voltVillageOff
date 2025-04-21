@@ -1,4 +1,7 @@
+'use client';
+
 import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from './context/AuthContext';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -11,10 +14,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "voltVillage - Engineering Components Marketplace",
-  description: "A marketplace for university engineering students to buy and sell electronic components.",
-};
 
 export default function RootLayout({ children }) {
   return (
@@ -29,7 +28,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

@@ -4,7 +4,7 @@ import styles from './page.module.css';
 import NavigationDrawer from '../components/NavigationDrawer';
 import InteractiveListingCard from '../components/InteractiveListingCard';
 
-export default function Home() {
+export default function MainHome() {
   // Mock data for featured listings
   const featuredListings = [
     {
