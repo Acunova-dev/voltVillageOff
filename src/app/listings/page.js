@@ -1,40 +1,46 @@
 "use client"
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
+import { api } from '../../utils/api';
 
 export default function Listings() {
-  // Mock data for listings
-  const listings = [
-    {
-      title: 'Arduino Uno',
-      price: 25.99,
-      description: 'Brand new Arduino Uno R3 board, perfect for electronics projects.',
-      image: '/placeholder.jpg',
-      location: 'Engineering Building',
-      condition: 'New',
-      category: 'Microcontrollers'
-    },
-    {
-      title: 'Raspberry Pi 4',
-      price: 45.99,
-      description: '4GB RAM model, barely used, comes with case and power supply.',
-      image: '/placeholder.jpg',
-      location: 'Computer Lab',
-      condition: 'Used - Like New',
-      category: 'Single Board Computers'
-    },
-    {
-      title: 'Oscilloscope',
-      price: 199.99,
-      description: 'Digital oscilloscope, 100MHz bandwidth, excellent condition.',
-      image: '/placeholder.jpg',
-      location: 'Electronics Lab',
-      condition: 'Used - Good',
-      category: 'Test Equipment'
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    category: '',
+    condition: '',
+    sort: 'recent'
+  });
+
+  useEffect(() => {
+    fetchListings();
+  }, [filters]);
+
+  const fetchListings = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        ...(filters.category && { category: filters.category }),
+        ...(filters.condition && { condition: filters.condition }),
+        ...(filters.sort === 'price-low' && { sort: 'price_asc' }),
+        ...(filters.sort === 'price-high' && { sort: 'price_desc' })
+      };
+      const data = await api.items.getAll(params);
+      setListings(data);
+    } catch (err) {
+      setError('Failed to load listings');
+      console.error('Error fetching listings:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+  };
 
   return (
     <div className={styles.container}>
@@ -47,7 +53,11 @@ export default function Listings() {
         </div>
 
         <div className={styles.filters}>
-          <select className={styles.filterSelect}>
+          <select 
+            className={styles.filterSelect}
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+          >
             <option value="">All Categories</option>
             <option value="microcontrollers">Microcontrollers</option>
             <option value="components">Components</option>
@@ -55,7 +65,11 @@ export default function Listings() {
             <option value="tools">Tools</option>
           </select>
 
-          <select className={styles.filterSelect}>
+          <select 
+            className={styles.filterSelect}
+            value={filters.condition}
+            onChange={(e) => handleFilterChange('condition', e.target.value)}
+          >
             <option value="">All Conditions</option>
             <option value="new">New</option>
             <option value="like-new">Used - Like New</option>
@@ -63,19 +77,36 @@ export default function Listings() {
             <option value="fair">Used - Fair</option>
           </select>
 
-          <select className={styles.filterSelect}>
+          <select 
+            className={styles.filterSelect}
+            value={filters.sort}
+            onChange={(e) => handleFilterChange('sort', e.target.value)}
+          >
             <option value="recent">Most Recent</option>
             <option value="price-low">Price: Low to High</option>
             <option value="price-high">Price: High to Low</option>
           </select>
         </div>
 
-        <div className={styles.grid}>
-          {listings.map((listing, index) => (
-            <InteractiveListingCard key={index} item={listing} />
-          ))}
-        </div>
+        {error && <div className={styles.error}>{error}</div>}
+        
+        {loading ? (
+          <div className={styles.loading}>Loading listings...</div>
+        ) : (
+          <div className={styles.grid}>
+            {listings.map((listing) => (
+              <InteractiveListingCard 
+                key={listing.id} 
+                item={{
+                  ...listing,
+                  condition: listing.condition || 'Not Specified',
+                  category: listing.category || 'Other'
+                }} 
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
-} 
+}

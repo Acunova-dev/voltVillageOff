@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
-import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function SignIn() {
@@ -19,16 +18,31 @@ export default function SignIn() {
     setError('');
 
     try {
-      // For now, skip the actual authentication and use the provided token
-      login('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDU5MTg5MzMsInN1YiI6IjMifQ.oOf0V31zLuaq2VYarh3rCqoYw7QJ3VTA6hU2dzPofd0', {
-        email,
-        // Add any other user data you want to store
+      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/users/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store token in localStorage
+      localStorage.setItem('token', data.token);
+      
+      // Update auth context
+      login(data.token, data.user);
       
       // Redirect to home page after successful login
       router.push('/');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'An error occurred during login');
+      console.error('Login error:', err);
     }
   };
 

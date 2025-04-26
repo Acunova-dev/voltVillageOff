@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './page.module.css';
+import axios from 'axios';
+import { API_BASE_URL, auth } from '@/utils/api';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -33,29 +35,20 @@ export default function SignUp() {
     setError('');
 
     try {
-      // Replace with your actual API endpoint
-      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/users/users/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDU5MTg5MzMsInN1YiI6IjMifQ.oOf0V31zLuaq2VYarh3rCqoYw7QJ3VTA6hU2dzPofd0'
-        },
-        body: JSON.stringify(formData),
+      // goes to /api/v1/users/users/ → proxied by Next → real API
+      const { data } = await auth.register(formData);
+
+      // then log in
+      const { data: loginData } = await auth.login({
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
-      }
-
-      // Use the hardcoded access token for now
-      login('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDU5MTg5MzMsInN1YiI6IjMifQ.oOf0V31zLuaq2VYarh3rCqoYw7QJ3VTA6hU2dzPofd0', data.user);
-      
-      // Redirect to home page
+      localStorage.setItem('token', loginData.token);
+      login(loginData.token, loginData.user);
       router.push('/');
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'An error occurred');
     }
   };
 

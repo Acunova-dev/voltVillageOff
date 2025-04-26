@@ -1,10 +1,12 @@
 "use client"
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import styles from './InteractiveListingCard.module.css';
 
 const InteractiveListingCard = ({ item }) => {
   const [expanded, setExpanded] = useState(false);
+  const router = useRouter();
 
   const defaultItem = {
     title: 'Arduino Uno',
@@ -17,6 +19,13 @@ const InteractiveListingCard = ({ item }) => {
   };
 
   const displayItem = item || defaultItem;
+  const imageUrl = displayItem.photo_urls?.[0]?.photo_url || displayItem.image || '/placeholder.jpg';
+
+  const handleContact = (e) => {
+    e.stopPropagation();
+    // Navigate to messages with this seller
+    router.push(`/messages?seller=${displayItem.seller_id}`);
+  };
 
   return (
     <div 
@@ -25,7 +34,7 @@ const InteractiveListingCard = ({ item }) => {
     >
       <div className={styles.imageContainer}>
         <Image
-          src={displayItem.image}
+          src={imageUrl}
           alt={displayItem.title}
           width={200}
           height={200}
@@ -44,9 +53,19 @@ const InteractiveListingCard = ({ item }) => {
               <span className={styles.condition}>✨ {displayItem.condition}</span>
               <span className={styles.category}>📁 {displayItem.category}</span>
             </div>
-            <button className={styles.contactButton}>
-              Contact Seller
-            </button>
+            <div className={styles.sellerInfo}>
+              {displayItem.seller && (
+                <p className={styles.sellerName}>
+                  Seller: {displayItem.seller.name} {displayItem.seller.surname}
+                </p>
+              )}
+              <button 
+                className={styles.contactButton}
+                onClick={handleContact}
+              >
+                Contact Seller
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -54,4 +73,4 @@ const InteractiveListingCard = ({ item }) => {
   );
 };
 
-export default InteractiveListingCard; 
+export default InteractiveListingCard;

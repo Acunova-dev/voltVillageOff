@@ -1,31 +1,42 @@
 "use client"
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../components/NavigationDrawer';
 import InteractiveListingCard from '../components/InteractiveListingCard';
+import { api } from '../utils/api';
+import { useRouter } from 'next/navigation';
 
 export default function MainHome() {
-  // Mock data for featured listings
-  const featuredListings = [
-    {
-      title: 'Arduino Uno',
-      price: 25.99,
-      description: 'Brand new Arduino Uno R3 board, perfect for electronics projects.',
-      image: '/placeholder.jpg',
-      location: 'Engineering Building',
-      condition: 'New',
-      category: 'Microcontrollers'
-    },
-    {
-      title: 'Raspberry Pi 4',
-      price: 45.99,
-      description: '4GB RAM model, barely used, comes with case and power supply.',
-      image: '/placeholder.jpg',
-      location: 'Computer Lab',
-      condition: 'Used - Like New',
-      category: 'Single Board Computers'
+  const [featuredListings, setFeaturedListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchFeaturedListings();
+  }, []);
+
+  const fetchFeaturedListings = async () => {
+    try {
+      setLoading(true);
+      // Get first 4 active listings for featured section
+      const data = await api.items.getAll({ limit: 4, listing_status: 'active' });
+      setFeaturedListings(data);
+    } catch (err) {
+      setError('Failed to load featured listings');
+      console.error('Error fetching featured listings:', err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/listings?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -37,31 +48,67 @@ export default function MainHome() {
           Your marketplace for engineering components
         </p>
 
-        <div className={styles.searchSection}>
+        <form onSubmit={handleSearch} className={styles.searchSection}>
           <input 
             type="text" 
             placeholder="Search for components..."
             className={styles.searchInput}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button className={styles.searchButton}>Search</button>
-        </div>
+          <button type="submit" className={styles.searchButton}>Search</button>
+        </form>
 
         <section className={styles.featuredSection}>
           <h2>Featured Listings</h2>
-          <div className={styles.grid}>
-            {featuredListings.map((listing, index) => (
-              <InteractiveListingCard key={index} item={listing} />
-            ))}
-          </div>
+          {error && <div className={styles.error}>{error}</div>}
+          {loading ? (
+            <div className={styles.loading}>Loading featured listings...</div>
+          ) : (
+            <div className={styles.grid}>
+              {featuredListings.map((listing) => (
+                <InteractiveListingCard 
+                  key={listing.id} 
+                  item={{
+                    ...listing,
+                    image: listing.photo_urls?.[0]?.photo_url || '/placeholder.jpg',
+                    location: listing.location || 'Not specified',
+                    condition: listing.condition || 'Not specified',
+                    category: listing.category || 'Other'
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className={styles.categoriesSection}>
           <h2>Browse Categories</h2>
           <div className={styles.categoryGrid}>
-            <div className={styles.categoryCard}>Microcontrollers</div>
-            <div className={styles.categoryCard}>Components</div>
-            <div className={styles.categoryCard}>Test Equipment</div>
-            <div className={styles.categoryCard}>Tools</div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=microcontrollers')}
+            >
+              Microcontrollers
+            </div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=components')}
+            >
+              Components
+            </div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=test-equipment')}
+            >
+              Test Equipment
+            </div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=tools')}
+            >
+              Tools
+            </div>
           </div>
         </section>
       </main>

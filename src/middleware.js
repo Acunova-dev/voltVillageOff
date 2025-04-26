@@ -24,7 +24,6 @@ export function middleware(request) {
   return NextResponse.next();
 }
 
-// Configure which routes to run middleware on
 export const config = {
   matcher: [
     '/',
