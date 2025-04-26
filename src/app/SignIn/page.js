@@ -5,22 +5,23 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
 import styles from './page.module.css';
-import axios from 'axios';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/login/', {
+      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/auth/login/json', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,22 +35,20 @@ export default function SignIn() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token in localStorage
       localStorage.setItem('token', data.token);
-      
-      // Update auth context
       login(data.token, data.user);
-      
-      // Redirect to home page after successful login
       router.push('/');
     } catch (err) {
       setError(err.message || 'An error occurred during login');
       console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={styles.container}>
+      {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
         <div className={styles.logoContainer}>
           <Image

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_BASE_URL = '/api/v1';
+export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
 
 // Set the default token in localStorage
 const DEFAULT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDYzNTQwMDcsInN1YiI6IjMifQ.1pAAb83MU1CdtWWcZ_TPTTv3U-l55_Bw4Y219Z2KkB8';

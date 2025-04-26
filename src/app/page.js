@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../components/NavigationDrawer';
 import InteractiveListingCard from '../components/InteractiveListingCard';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { items } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
@@ -22,7 +23,7 @@ export default function MainHome() {
       setLoading(true);
       // Get first 4 active listings for featured section
       const data = await items.getAll({ limit: 4, listing_status: 'active' });
-      setFeaturedListings(data);
+      setFeaturedListings(data.data);
     } catch (err) {
       setError('Failed to load featured listings');
       console.error('Error fetching featured listings:', err);
@@ -63,7 +64,7 @@ export default function MainHome() {
           <h2>Featured Listings</h2>
           {error && <div className={styles.error}>{error}</div>}
           {loading ? (
-            <div className={styles.loading}>Loading featured listings...</div>
+            <LoadingSpinner />
           ) : (
             <div className={styles.grid}>
               {featuredListings.map((listing) => (
