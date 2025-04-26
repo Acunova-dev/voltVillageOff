@@ -35,20 +35,21 @@ export default function SignUp() {
     setError('');
 
     try {
-      // goes to /api/v1/users/users/ → proxied by Next → real API
-      const { data } = await auth.register(formData);
-
-      // then log in
-      const { data: loginData } = await auth.login({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      localStorage.setItem('token', loginData.token);
-      login(loginData.token, loginData.user);
-      router.push('/');
+      // Send registration data to backend as JSON
+      console.log("Sending registration data to backend...");
+      console.log(JSON.stringify(formData));
+      const { data } = await axios.post('https://voltvillage-api.onrender.com/api/v1/users/users', 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'An error occurred');
+      // setError(err.response?.data?.message || err.message || 'An error occurred');
+      setError(err.response.data.detail);
+      console.error(`create user error `, err.response.data.detail);
     }
   };
 
