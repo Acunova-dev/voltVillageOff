@@ -1,95 +1,117 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+import React, { useState, useEffect } from 'react';
+import styles from './page.module.css';
+import NavigationDrawer from '../components/NavigationDrawer';
+import InteractiveListingCard from '../components/InteractiveListingCard';
+import { api } from '../utils/api';
+import { useRouter } from 'next/navigation';
 
-export default function SignIn() {
+export default function MainHome() {
+  const [featuredListings, setFeaturedListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchFeaturedListings();
+  }, []);
+
+  const fetchFeaturedListings = async () => {
+    try {
+      setLoading(true);
+      // Get first 4 active listings for featured section
+      const data = await api.items.getAll({ limit: 4, listing_status: 'active' });
+      setFeaturedListings(data);
+    } catch (err) {
+      setError('Failed to load featured listings');
+      console.error('Error fetching featured listings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/listings?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
-    <div className={styles.page}>
+    <div className={styles.container}>
+      <NavigationDrawer />
+      
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <h1 className={styles.title}>Welcome to voltVillage</h1>
+        <p className={styles.description}>
+          Your marketplace for engineering components
+        </p>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
+        <form onSubmit={handleSearch} className={styles.searchSection}>
+          <input 
+            type="text" 
+            placeholder="Search for components..."
+            className={styles.searchInput}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button type="submit" className={styles.searchButton}>Search</button>
+        </form>
+
+        <section className={styles.featuredSection}>
+          <h2>Featured Listings</h2>
+          {error && <div className={styles.error}>{error}</div>}
+          {loading ? (
+            <div className={styles.loading}>Loading featured listings...</div>
+          ) : (
+            <div className={styles.grid}>
+              {featuredListings.map((listing) => (
+                <InteractiveListingCard 
+                  key={listing.id} 
+                  item={{
+                    ...listing,
+                    image: listing.photo_urls?.[0]?.photo_url || '/placeholder.jpg',
+                    location: listing.location || 'Not specified',
+                    condition: listing.condition || 'Not specified',
+                    category: listing.category || 'Other'
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className={styles.categoriesSection}>
+          <h2>Browse Categories</h2>
+          <div className={styles.categoryGrid}>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=microcontrollers')}
+            >
+              Microcontrollers
+            </div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=components')}
+            >
+              Components
+            </div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=test-equipment')}
+            >
+              Test Equipment
+            </div>
+            <div 
+              className={styles.categoryCard}
+              onClick={() => router.push('/listings?category=tools')}
+            >
+              Tools
+            </div>
+          </div>
+        </section>
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }

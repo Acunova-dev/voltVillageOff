@@ -1,95 +1,171 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function SignIn() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../context/AuthContext';
+import Image from 'next/image';
+import Link from 'next/link';
+import styles from './page.module.css';
+import axios from 'axios';
+import { API_BASE_URL, auth } from '@/utils/api';
+
+export default function SignUp() {
+  const [formData, setFormData] = useState({
+    email: '',
+    name: '',
+    surname: '',
+    phone_number: '',
+    gender: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
+  const router = useRouter();
+  const { login } = useAuth();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      // goes to /api/v1/users/users/ → proxied by Next → real API
+      const { data } = await auth.register(formData);
+
+      // then log in
+      const { data: loginData } = await auth.login({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      localStorage.setItem('token', loginData.token);
+      login(loginData.token, loginData.user);
+      router.push('/');
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || 'An error occurred');
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <div className={styles.container}>
+      <div className={styles.leftPanel}>
+        <div className={styles.logoContainer}>
+          <Image
+            src="/vercel.svg"
+            alt="Logo"
+            width={40}
+            height={40}
+            className={styles.logo}
+          />
+          <h2>voltVillage</h2>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <h1>Welcome to</h1>
+        <h2>voltVillage</h2>
+        <p className={styles.subtitle}>Your trusted marketplace for university engineering components.</p>
+      </div>
+      <div className={styles.rightPanel}>
+        <div className={styles.formContainer}>
+          <h2>Create your account</h2>
+          {error && <p className={styles.error}>{error}</p>}
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label htmlFor="name">First Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter your first name"
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="surname">Surname</label>
+              <input
+                type="text"
+                id="surname"
+                name="surname"
+                value={formData.surname}
+                onChange={handleChange}
+                placeholder="Enter your surname"
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="phone_number">Phone Number</label>
+              <input
+                type="tel"
+                id="phone_number"
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={handleChange}
+                placeholder="Enter your phone number"
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="gender">Gender</label>
+              <select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            <div className={styles.terms}>
+              <input type="checkbox" id="terms" required />
+              <label htmlFor="terms">
+                By Signing Up, I agree to <Link href="/terms">Terms & Conditions</Link>
+              </label>
+            </div>
+            <div className={styles.actions}>
+              <button type="submit" className={styles.signUpBtn}>
+                Sign Up
+              </button>
+              <button type="button" className={styles.signInBtn} onClick={() => router.push('/SignIn')}>
+                Already have an account? Sign In
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
