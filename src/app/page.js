@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../components/NavigationDrawer';
 import InteractiveListingCard from '../components/InteractiveListingCard';
-import { api } from '../utils/api';
+import { items } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
 export default function MainHome() {
@@ -21,7 +21,7 @@ export default function MainHome() {
     try {
       setLoading(true);
       // Get first 4 active listings for featured section
-      const data = await api.items.getAll({ limit: 4, listing_status: 'active' });
+      const data = await items.getAll({ limit: 4, listing_status: 'active' });
       setFeaturedListings(data);
     } catch (err) {
       setError('Failed to load featured listings');

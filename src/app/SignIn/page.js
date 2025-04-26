@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
 import styles from './page.module.css';
+import axios from 'axios';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { login } = useAuth();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
