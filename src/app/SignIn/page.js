@@ -30,13 +30,23 @@ export default function SignIn() {
       });
 
       const data = await response.json();
+      console.log('Login response:', data); // Debug log
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
+      console.log('Setting user data:', data.user); // Debug log
+      
+      // Store token in both localStorage and cookies
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      document.cookie = `token=${data.token}; path=/`;
+      
       login(data.token, data.user);
+
+      console.log('Auth state after login:', { token: data.token, user: data.user }); // Debug log
+      
       router.push('/');
     } catch (err) {
       setError(err.message || 'An error occurred during login');

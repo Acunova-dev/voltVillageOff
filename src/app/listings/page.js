@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
-import { items } from '../../utils/api';
+import { api } from '../../utils/api';
 
 export default function Listings() {
   const [listings, setListings] = useState([]);
@@ -28,8 +28,8 @@ export default function Listings() {
         ...(filters.sort === 'price-low' && { sort: 'price_asc' }),
         ...(filters.sort === 'price-high' && { sort: 'price_desc' })
       };
-      const data = await items.getAll(params);
-      setListings(data);
+      const data = await api.items.getAll(params);
+      setListings(data.data);
     } catch (err) {
       setError('Failed to load listings');
       console.error('Error fetching listings:', err);

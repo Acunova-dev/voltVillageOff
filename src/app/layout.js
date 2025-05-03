@@ -1,5 +1,3 @@
-'use client';
-
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from './context/AuthContext';
 import "./globals.css";
@@ -14,6 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const metadata = {
+  title: "VoltVillage",
+  description: "Your trusted marketplace for university engineering components",
+};
 
 export default function RootLayout({ children }) {
   return (
@@ -21,10 +23,7 @@ export default function RootLayout({ children }) {
       <head>
         <link
           rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>

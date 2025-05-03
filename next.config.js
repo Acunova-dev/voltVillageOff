@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   images: {
-    domains: ['example_arduno.com', 'rees52.com'],
+    domains: ['example_arduno.com', 'rees52.com', 'example.com'],
   },
   async rewrites() {
     return [
