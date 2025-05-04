@@ -199,7 +199,7 @@ a.secondary {
   position: relative;
   min-height: 600px;
   display: flex;
-  margin: -2rem -2rem 4rem;
+  margin: -4rem -2rem 4rem;
   padding: 4rem 2rem;
   background: linear-gradient(135deg, #1a26399b 0%, #2c1a879b 100%),
               url('/pcb background.png');
@@ -384,6 +384,27 @@ a.secondary {
   background: rgba(44, 26, 135, 0.12);
   animation: orbFloat 8s ease-in-out infinite reverse;
 }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.categoryCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
 
 @keyframes glow {
   from {

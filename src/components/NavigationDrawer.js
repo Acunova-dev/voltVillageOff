@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../app/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -8,27 +8,17 @@ import styles from './NavigationDrawer.module.css';
 
 const NavigationDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
-
-  // Debug logging for auth state in NavigationDrawer
-  useEffect(() => {
-    console.log('NavigationDrawer auth state:', { user, isLoading });
-  }, [user, isLoading]);
 
   const handleLogout = () => {
     logout();
     router.push('/SignIn');
   };
 
-  // Don't render until auth state is loaded
-  if (isLoading) {
-    return null;
-  }
-
   return (
     <>
-      <nav className={styles.navbar}>
+      <nav className={styles.navbar} style={{ backgroundColor: 'black', color: 'grey'}}>
         <div className={styles.navContent}>
           <Link href="/" className={styles.logo}>
             voltVillage
@@ -63,7 +53,7 @@ const NavigationDrawer = () => {
             )}
             {user ? (
               <button onClick={handleLogout} className={styles.logoutButton}>
-                Logout {user.name}
+                Logout
               </button>
             ) : (
               <button onClick={() => router.push('/SignIn')} className={styles.loginButton}>

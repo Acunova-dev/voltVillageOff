@@ -6,29 +6,36 @@ import InteractiveListingCard from '../components/InteractiveListingCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { items } from '@/utils/api';
 import { useRouter } from 'next/navigation';
+import { useAuth } from './context/AuthContext';
 
 export default function MainHome() {
   const [featuredListings, setFeaturedListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [listingsLoading, setListingsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    fetchFeaturedListings();
-  }, []);
+    if (!isLoading && !user) {
+      router.push('/SignIn');
+      return;
+    }
+    if (user) {
+      fetchFeaturedListings();
+    }
+  }, [user, isLoading, router]);
 
   const fetchFeaturedListings = async () => {
     try {
-      setLoading(true);
-      // Get first 4 active listings for featured section
+      setListingsLoading(true);
       const data = await items.getAll({ limit: 4, listing_status: 'active' });
       setFeaturedListings(data.data);
     } catch (err) {
       setError('Failed to load featured listings');
       console.error('Error fetching featured listings:', err);
     } finally {
-      setLoading(false);
+      setListingsLoading(false);
     }
   };
 
@@ -38,6 +45,16 @@ export default function MainHome() {
       router.push(`/listings?search=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  // Show loading spinner only during initial auth check
+  if (isLoading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  // If not authenticated and not loading, let the useEffect handle redirect
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>
@@ -93,7 +110,7 @@ export default function MainHome() {
         <section className={styles.featuredSection}>
           <h2>Featured Listings</h2>
           {error && <div className={styles.error}>{error}</div>}
-          {loading ? (
+          {listingsLoading ? (
             <LoadingSpinner />
           ) : (
             <div className={styles.grid}>

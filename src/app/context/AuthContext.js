@@ -9,40 +9,77 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchUserData = async (token) => {
+    try {
+      console.log('Fetching user data with token:', token);
+      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/users/users/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+
+      const userData = await response.json();
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      return true;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      logout();
+      return false;
+    }
+  };
+
   // Initialize auth state from localStorage
   useEffect(() => {
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const storedUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-      
-      if (token) {
-        setAccessToken(token);
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+    const initializeAuth = async () => {
+      try {
+        setIsLoading(true);
+        const token = localStorage.getItem('token');
+        console.log('Initializing auth state with token: check 1', token);
+        
+        if (token) {
+          console.log('Initializing auth state with token: check 2', token);
+          setAccessToken(token);
+          const success = await fetchUserData(token);
+          if (!success) {
+            setAccessToken(null);
+          }
         }
+      } catch (error) {
+        console.error('Error initializing auth state:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error initializing auth state:', error);
-    }
-    setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = (token, userData) => {
-    setAccessToken(token);
-    setUser(userData);
-    if (typeof window !== 'undefined') {
+  const login = async (token, initialUserData) => {
+    try {
+      console.log('Logging in with token:', token);
+      setIsLoading(true);
+      setAccessToken(token);
+      setUser(initialUserData);
+      
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(initialUserData));
+      
+      await fetchUserData(token);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
     setAccessToken(null);
     setUser(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
   const value = {
@@ -52,10 +89,6 @@ export function AuthProvider({ children }) {
     logout,
     isLoading
   };
-
-  if (isLoading) {
-    return null;
-  }
 
   return (
     <AuthContext.Provider value={value}>
