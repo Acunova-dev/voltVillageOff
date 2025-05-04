@@ -1,9 +1,9 @@
 .card {
-  background: #ffffff;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
   cursor: pointer;
   width: 100%;
   max-width: 300px;
@@ -12,7 +12,7 @@
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
 .card.expanded {
@@ -27,8 +27,9 @@
 }
 
 .image {
+  width: 100%;
+  height: 200px;
   object-fit: cover;
-  transition: transform 0.3s ease;
 }
 
 .card:hover .image {
@@ -40,17 +41,17 @@
 }
 
 .title {
-  margin: 0;
-  font-size: 1.2rem;
-  color: #333;
+  font-size: 1.1rem;
   font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
 }
 
 .price {
+  font-size: 1.2rem;
+  font-weight: 600;
   color: #0070f3;
-  font-size: 1.4rem;
-  font-weight: bold;
-  margin: 8px 0;
+  margin-bottom: 16px;
 }
 
 .expandedContent {
@@ -60,10 +61,10 @@
 }
 
 .description {
-  color: #666;
   font-size: 0.9rem;
-  line-height: 1.5;
+  color: #666;
   margin-bottom: 16px;
+  line-height: 1.4;
 }
 
 .details {
@@ -73,7 +74,30 @@
   margin-bottom: 16px;
 }
 
-.location,
+.meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #666;
+  background: #f5f5f5;
+}
+
 .condition,
 .category {
   font-size: 0.8rem;
@@ -87,7 +111,7 @@
   width: 100%;
   padding: 12px;
   background-color: #0070f3;
-  color: white;
+  color: #fff;
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -97,4 +121,4 @@
 
 .contactButton:hover {
   background-color: #0051b3;
-} 
+}

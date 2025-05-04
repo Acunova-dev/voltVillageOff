@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
-import { api } from '../../utils/api';
+import { items } from '../../utils/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
@@ -19,7 +19,7 @@ export default function Profile() {
   const fetchUserListings = async () => {
     try {
       setLoading(true);
-      const data = await api.items.getMyItems();
+      const data = await items.getMyItems();
       setUserListings(data);
     } catch (err) {
       setError('Failed to load your listings');

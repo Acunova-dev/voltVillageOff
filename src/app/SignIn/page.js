@@ -1,24 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
 import styles from './page.module.css';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/users/login/', {
+      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/auth/login/json', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,27 +30,35 @@ export default function SignIn() {
       });
 
       const data = await response.json();
+      console.log('Login response:', data); // Debug log
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store token in localStorage
+      console.log('Setting user data:', data.user); // Debug log
+      
+      // Store token in both localStorage and cookies
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      document.cookie = `token=${data.token}; path=/`;
       
-      // Update auth context
       login(data.token, data.user);
+
+      console.log('Auth state after login:', { token: data.token, user: data.user }); // Debug log
       
-      // Redirect to home page after successful login
       router.push('/');
     } catch (err) {
       setError(err.message || 'An error occurred during login');
       console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={styles.container}>
+      {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
         <div className={styles.logoContainer}>
           <Image

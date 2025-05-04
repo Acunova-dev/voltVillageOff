@@ -29,7 +29,7 @@ export default function Listings() {
         ...(filters.sort === 'price-high' && { sort: 'price_desc' })
       };
       const data = await api.items.getAll(params);
-      setListings(data);
+      setListings(data.data);
     } catch (err) {
       setError('Failed to load listings');
       console.error('Error fetching listings:', err);

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
-import { api } from '../../utils/api';
+import { items } from '../../utils/api';
 
 export default function ManageListings() {
   const [userListings, setUserListings] = useState([]);
@@ -16,7 +16,7 @@ export default function ManageListings() {
   const fetchUserListings = async () => {
     try {
       setLoading(true);
-      const data = await api.items.getMyItems();
+      const data = await items.getMyItems();
       setUserListings(data);
     } catch (err) {
       setError('Failed to load your listings');
@@ -28,7 +28,7 @@ export default function ManageListings() {
 
   const handleStockUpdate = async (id, newStock) => {
     try {
-      await api.items.update(id, { stock: newStock });
+      await items.update(id, { stock: newStock });
       setUserListings(listings => 
         listings.map(item => 
           item.id === id ? { ...item, stock: newStock } : item
@@ -47,7 +47,7 @@ export default function ManageListings() {
     }
 
     try {
-      await api.items.delete(id);
+      await items.delete(id);
       setUserListings(listings => listings.filter(item => item.id !== id));
     } catch (err) {
       console.error('Error deleting listing:', err);

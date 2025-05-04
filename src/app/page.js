@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../components/NavigationDrawer';
 import InteractiveListingCard from '../components/InteractiveListingCard';
-import { api } from '../utils/api';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { items } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
 export default function MainHome() {
@@ -21,8 +22,8 @@ export default function MainHome() {
     try {
       setLoading(true);
       // Get first 4 active listings for featured section
-      const data = await api.items.getAll({ limit: 4, listing_status: 'active' });
-      setFeaturedListings(data);
+      const data = await items.getAll({ limit: 4, listing_status: 'active' });
+      setFeaturedListings(data.data);
     } catch (err) {
       setError('Failed to load featured listings');
       console.error('Error fetching featured listings:', err);
@@ -43,27 +44,57 @@ export default function MainHome() {
       <NavigationDrawer />
       
       <main className={styles.main}>
-        <h1 className={styles.title}>Welcome to voltVillage</h1>
-        <p className={styles.description}>
-          Your marketplace for engineering components
-        </p>
+        <section className={styles.heroSection}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.title}>Welcome to voltVillage</h1>
+            <p className={styles.description}>
+              Your marketplace for engineering components
+            </p>
 
-        <form onSubmit={handleSearch} className={styles.searchSection}>
-          <input 
-            type="text" 
-            placeholder="Search for components..."
-            className={styles.searchInput}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button type="submit" className={styles.searchButton}>Search</button>
-        </form>
+            <form onSubmit={handleSearch} className={styles.searchSection}>
+              <div className={styles.searchWrapper}>
+                <i className="fas fa-search"></i>
+                <input 
+                  type="text" 
+                  placeholder="Search for components, tools, or equipment..."
+                  className={styles.searchInput}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button type="submit" className={styles.searchButton}>
+                <span>Search</span>
+                <i className="fas fa-arrow-right"></i>
+              </button>
+            </form>
+
+            <div className={styles.heroFeatures}>
+              <div className={styles.featureItem}>
+                <i className="fas fa-microchip"></i>
+                <span>Quality Components</span>
+              </div>
+              <div className={styles.featureItem}>
+                <i className="fas fa-tools"></i>
+                <span>Test Equipment</span>
+              </div>
+              <div className={styles.featureItem}>
+                <i className="fas fa-shield-alt"></i>
+                <span>Verified Sellers</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.heroVisuals}>
+            <div className={styles.circuitOverlay}></div>
+            <div className={styles.glowingOrbs}></div>
+          </div>
+        </section>
 
         <section className={styles.featuredSection}>
           <h2>Featured Listings</h2>
           {error && <div className={styles.error}>{error}</div>}
           {loading ? (
-            <div className={styles.loading}>Loading featured listings...</div>
+            <LoadingSpinner />
           ) : (
             <div className={styles.grid}>
               {featuredListings.map((listing) => (
