@@ -2,30 +2,70 @@
 import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
+import CreateListingModal from '../../components/CreateListingModal';
 import { items } from '../../utils/api';
+import { useRouter } from 'next/navigation';
 
 export default function ManageListings() {
   const [userListings, setUserListings] = useState([]);
+  const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const router = useRouter();
+  const [filters, setFilters] = useState({
+    category: '',
+    condition: '',
+    sort: 'recent'
+  });
 
   useEffect(() => {
     fetchUserListings();
   }, []);
 
+  useEffect(() => {
+    let result = [...userListings];
+
+    if (filters.category) {
+      result = result.filter(item => item.category === filters.category);
+    }
+
+    if (filters.condition) {
+      result = result.filter(item => item.condition === filters.condition);
+    }
+
+    switch (filters.sort) {
+      case 'price-low':
+        result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        break;
+      case 'price-high':
+        result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        break;
+      default:
+        result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    setFilteredListings(result);
+  }, [filters, userListings]);
+
   const fetchUserListings = async () => {
     try {
       setLoading(true);
       const response = await items.getMyItems();
-      // Ensure we handle both possible API response structures
       const listingsData = response.data || response || [];
-      setUserListings(Array.isArray(listingsData) ? listingsData : []);
+      const listings = Array.isArray(listingsData) ? listingsData : [];
+      setUserListings(listings);
+      setFilteredListings(listings);
     } catch (err) {
       setError('Failed to load your listings');
       console.error('Error fetching user listings:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
   };
 
   const handleStockUpdate = async (id, newStock) => {
@@ -38,7 +78,6 @@ export default function ManageListings() {
       );
     } catch (err) {
       console.error('Error updating stock:', err);
-      // Revert the stock change in UI
       setUserListings(prev => [...prev]);
     }
   };
@@ -54,6 +93,23 @@ export default function ManageListings() {
     } catch (err) {
       console.error('Error deleting listing:', err);
     }
+  };
+
+  const handleCreateListing = async (formData) => {
+    try {
+      const response = await items.create(formData);
+      const newListing = response.data;
+      setUserListings(prev => [newListing, ...prev]);
+      return response;
+    } catch (err) {
+      console.error('Error creating listing:', err);
+      throw new Error(err.response?.data?.message || 'Failed to create listing');
+    }
+  };
+
+  const handleButtonClick = () => {
+    console.log('Create button clicked');
+    setShowCreateModal(true);
   };
 
   if (error) {
@@ -74,7 +130,7 @@ export default function ManageListings() {
       <main className={styles.main}>
         <div className={styles.header}>
           <h1>Manage Your Listings</h1>
-          <button className={styles.createButton}>
+          <button className={styles.createButton} onClick={handleButtonClick}>
             <i className="fas fa-plus"></i> Create New Listing
           </button>
         </div>
@@ -101,6 +157,42 @@ export default function ManageListings() {
               </div>
             </div>
 
+            <div className={styles.filters}>
+              <select 
+                className={styles.filterSelect}
+                value={filters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
+              >
+                <option value="">All Categories</option>
+                <option value="microcontrollers">Microcontrollers</option>
+                <option value="components">Components</option>
+                <option value="test-equipment">Test Equipment</option>
+                <option value="tools">Tools</option>
+              </select>
+
+              <select 
+                className={styles.filterSelect}
+                value={filters.condition}
+                onChange={(e) => handleFilterChange('condition', e.target.value)}
+              >
+                <option value="">All Conditions</option>
+                <option value="new">New</option>
+                <option value="like-new">Used - Like New</option>
+                <option value="good">Used - Good</option>
+                <option value="fair">Used - Fair</option>
+              </select>
+
+              <select 
+                className={styles.filterSelect}
+                value={filters.sort}
+                onChange={(e) => handleFilterChange('sort', e.target.value)}
+              >
+                <option value="recent">Most Recent</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
+
             <div className={styles.listingsTable}>
               <div className={styles.tableHeader}>
                 <div className={styles.tableCell}>Item</div>
@@ -110,7 +202,7 @@ export default function ManageListings() {
                 <div className={styles.tableCell}>Actions</div>
               </div>
 
-              {userListings.map((listing) => (
+              {filteredListings.map((listing) => (
                 <div key={listing.id} className={styles.tableRow}>
                   <div className={styles.tableCell}>
                     <div className={styles.itemInfo}>
@@ -129,7 +221,7 @@ export default function ManageListings() {
                   <div className={styles.tableCell}>
                     <input 
                       type="number" 
-                      value={listing.stock} 
+                      value={listing.stock || 0} 
                       className={styles.stockInput}
                       min="0"
                       onChange={(e) => handleStockUpdate(listing.id, parseInt(e.target.value, 10))}
@@ -157,6 +249,13 @@ export default function ManageListings() {
               ))}
             </div>
           </>
+        )}
+
+        {showCreateModal && (
+          <CreateListingModal
+            onClose={() => setShowCreateModal(false)}
+            onSubmit={handleCreateListing}
+          />
         )}
       </main>
     </div>

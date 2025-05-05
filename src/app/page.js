@@ -29,7 +29,7 @@ export default function MainHome() {
   const fetchFeaturedListings = async () => {
     try {
       setListingsLoading(true);
-      const data = await items.getAll({ limit: 4, listing_status: 'active' });
+      const data = await items.getAll({ limit: 10, listing_status: 'active' });
       setFeaturedListings(data.data);
     } catch (err) {
       setError('Failed to load featured listings');
