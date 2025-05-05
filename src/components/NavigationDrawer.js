@@ -26,6 +26,7 @@ const NavigationDrawer = () => {
       <TopLoadingBar />
       <nav className={styles.navbar}>
         <div className={styles.navContent}>
+
           <Link href="/" className={styles.logo}>
             voltVillage
           </Link>
@@ -35,7 +36,7 @@ const NavigationDrawer = () => {
             <Link href="/" className={`${styles.navLink} ${isActive('/') ? styles.active : ''}`}>
               <i className="fas fa-home"></i> Home
             </Link>
-            
+
             {/* Listings Dropdown */}
             <div className={styles.dropdownContainer}>
               <div className={`${styles.dropdownButton} ${isActiveGroup(['/listings', '/manage-listings']) ? styles.active : ''}`}>
@@ -90,72 +91,10 @@ const NavigationDrawer = () => {
                 </div>
               </>
             )}
-
-            {!user && (
-              <button onClick={() => router.push('/SignIn')} className={styles.loginButton}>
-                <i className="fas fa-sign-in-alt"></i> Sign In
-              </button>
-            )}
           </div>
-
-          {/* Mobile Menu Button */}
-          <button className={styles.menuButton} onClick={() => setIsOpen(!isOpen)}>
-            <i className="fas fa-bars"></i>
-          </button>
         </div>
       </nav>
 
-      {/* Mobile Navigation */}
-      <div className={`${styles.mobileNav} ${isOpen ? styles.open : ''}`}>
-        <div className={styles.mobileHeader}>
-          <span>Menu</span>
-          <button className={styles.closeButton} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-        <div className={styles.mobileLinks}>
-          <Link href="/" className={`${styles.mobileLink} ${isActive('/') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-home"></i> Home
-          </Link>
-          <Link href="/listings" className={`${styles.mobileLink} ${isActive('/listings') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-            <i className="fas fa-tags"></i> Browse Listings
-          </Link>
-          
-          {user && (
-            <>
-              <Link href="/manage-listings" className={`${styles.mobileLink} ${isActive('/manage-listings') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-                <i className="fas fa-cogs"></i> Manage Listings
-              </Link>
-              <Link href="/requests" className={`${styles.mobileLink} ${isActive('/requests') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-                <i className="fas fa-bullhorn"></i> Requests
-              </Link>
-              <Link href="/messages" className={`${styles.mobileLink} ${isActive('/messages') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-                <i className="fas fa-envelope"></i> Messages
-              </Link>
-              <Link href="/cart" className={`${styles.mobileLink} ${isActive('/cart') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-                <i className="fas fa-shopping-cart"></i> Cart
-              </Link>
-              <Link href="/profile" className={`${styles.mobileLink} ${isActive('/profile') ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
-                <i className="fas fa-user"></i> Profile
-              </Link>
-              <button onClick={() => { handleLogout(); setIsOpen(false); }} className={styles.mobileLogoutButton}>
-                <i className="fas fa-sign-out-alt"></i> Logout
-              </button>
-            </>
-          )}
-          
-          {!user && (
-            <button onClick={() => { router.push('/SignIn'); setIsOpen(false); }} className={styles.mobileLoginButton}>
-              <i className="fas fa-sign-in-alt"></i> Sign In
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Overlay for mobile menu */}
-      {isOpen && (
-        <div className={styles.overlay} onClick={() => setIsOpen(false)} />
-      )}
     </>
   );
 };

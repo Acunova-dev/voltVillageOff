@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
@@ -7,6 +8,9 @@ import CreateListingModal from '../../components/CreateListingModal';
 import { items } from '@/utils/api';
 
 export default function Listings() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +23,7 @@ export default function Listings() {
 
   useEffect(() => {
     fetchListings();
-  }, [filters]);
+  }, [filters, searchQuery]);
 
   const fetchListings = async () => {
     try {
@@ -28,7 +32,8 @@ export default function Listings() {
         ...(filters.category && { category: filters.category }),
         ...(filters.condition && { condition: filters.condition }),
         ...(filters.sort === 'price-low' && { sort: 'price_asc' }),
-        ...(filters.sort === 'price-high' && { sort: 'price_desc' })
+        ...(filters.sort === 'price-high' && { sort: 'price_desc' }),
+        ...(searchQuery && { search: searchQuery })
       };
       const data = await items.getAll(params);
       setListings(data.data);
@@ -56,6 +61,12 @@ export default function Listings() {
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    router.push(`/listings${query ? `?search=${encodeURIComponent(query)}` : ''}`);
+  };
+
   return (
     <div className={styles.container}>
       <NavigationDrawer />
@@ -67,6 +78,20 @@ export default function Listings() {
             + Create New Listing
           </button>
         </div>
+
+        <form onSubmit={handleSearch} className={styles.searchBar}>
+          <i className="fas fa-search"></i>
+          <input
+            type="text"
+            placeholder="Search listings..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={styles.searchInput}
+          />
+          <button type="submit" className={styles.searchButton}>
+            Search
+          </button>
+        </form>
 
         <div className={styles.filters}>
           <select 
