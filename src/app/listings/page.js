@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
-import { api } from '../../utils/api';
+import CreateListingModal from '../../components/CreateListingModal';
+import { items } from '@/utils/api';
 
 export default function Listings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     condition: '',
@@ -28,7 +30,7 @@ export default function Listings() {
         ...(filters.sort === 'price-low' && { sort: 'price_asc' }),
         ...(filters.sort === 'price-high' && { sort: 'price_desc' })
       };
-      const data = await api.items.getAll(params);
+      const data = await items.getAll(params);
       setListings(data.data);
     } catch (err) {
       setError('Failed to load listings');
@@ -42,6 +44,18 @@ export default function Listings() {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleCreateListing = async (formData) => {
+    try {
+      const response = await items.create(formData);
+      const newListing = response.data;
+      setListings(prev => [newListing, ...prev]);
+      return response;
+    } catch (err) {
+      console.error('Error creating listing:', err);
+      throw new Error(err.response?.data?.message || 'Failed to create listing');
+    }
+  };
+
   return (
     <div className={styles.container}>
       <NavigationDrawer />
@@ -49,7 +63,9 @@ export default function Listings() {
       <main className={styles.main}>
         <div className={styles.header}>
           <h1>All Listings</h1>
-          <button className={styles.createButton}>+ Create New Listing</button>
+          <button className={styles.createButton} onClick={() => setShowCreateModal(true)}>
+            + Create New Listing
+          </button>
         </div>
 
         <div className={styles.filters}>
@@ -105,6 +121,13 @@ export default function Listings() {
               />
             ))}
           </div>
+        )}
+
+        {showCreateModal && (
+          <CreateListingModal
+            onClose={() => setShowCreateModal(false)}
+            onSubmit={handleCreateListing}
+          />
         )}
       </main>
     </div>

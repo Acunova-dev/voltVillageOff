@@ -19,8 +19,10 @@ export default function Profile() {
   const fetchUserListings = async () => {
     try {
       setLoading(true);
-      const data = await items.getMyItems();
-      setUserListings(data);
+      const response = await items.getMyItems();
+      // Ensure we handle both possible API response structures
+      const listingsData = response.data || response || [];
+      setUserListings(Array.isArray(listingsData) ? listingsData : []);
     } catch (err) {
       setError('Failed to load your listings');
       console.error('Error fetching user listings:', err);

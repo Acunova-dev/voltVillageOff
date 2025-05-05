@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
 import styles from './page.module.css';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { auth } from '@/utils/api';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -21,36 +22,22 @@ export default function SignIn() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/auth/login/json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await auth.login({ email, password });
+      
+      // The API response has the token directly in response.data
+      const { data } = response;
+      console.log('Login response:', data);
 
-      const data = await response.json();
-      console.log('Login response:', data); // Debug log
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      if (!data) {
+        throw new Error('Login failed - invalid response');
       }
 
-      console.log('Setting user data:', data.user); // Debug log
-      
-      // Store token in both localStorage and cookies
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      document.cookie = `token=${data.token}; path=/`;
-      
-      login(data.token, data.user);
-
-      console.log('Auth state after login:', { token: data.token, user: data.user }); // Debug log
-      
+      // Now pass the token and user data to the auth context
+      await login(data.access_token, data.user);
       router.push('/');
     } catch (err) {
-      setError(err.message || 'An error occurred during login');
       console.error('Login error:', err);
+      setError(err.response?.data?.detail || err.message || 'An error occurred during login');
     } finally {
       setIsLoading(false);
     }
