@@ -1,5 +1,6 @@
 "use client"
 import React, { useState } from 'react';
+import Image from 'next/image';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 
@@ -48,7 +49,13 @@ export default function Cart() {
           <div className={styles.cartItems}>
             {cartItems.map((item) => (
               <div key={item.id} className={styles.cartItem}>
-                <img src={item.image} alt={item.title} className={styles.itemImage} />
+                <Image 
+                  src={item.image} 
+                  alt={item.title} 
+                  className={styles.itemImage}
+                  width={100}
+                  height={100} 
+                />
                 
                 <div className={styles.itemDetails}>
                   <h3>{item.title}</h3>
@@ -103,11 +110,11 @@ export default function Cart() {
             </button>
             <p className={styles.note}>
               <i className="fas fa-info-circle"></i>
-              You'll be able to message the sellers to arrange payment and pickup/delivery.
+              You&apos;ll be able to message the sellers to arrange payment and pickup/delivery.
             </p>
           </div>
         </div>
       </main>
     </div>
   );
-} 
+}

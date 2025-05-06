@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import styles from './TopLoadingBar.module.css';
 
-export default function TopLoadingBar() {
+function TopLoadingBarContent() {
   const [loading, setLoading] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -18,4 +18,12 @@ export default function TopLoadingBar() {
   if (!loading) return null;
 
   return <div className={styles.loadingBar} />;
+}
+
+export default function TopLoadingBar() {
+  return (
+    <Suspense fallback={<div className={styles.loadingBar} />}>
+      <TopLoadingBarContent />
+    </Suspense>
+  );
 }

@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import CreateListingModal from '../../components/CreateListingModal';
@@ -206,10 +207,12 @@ export default function ManageListings() {
                 <div key={listing.id} className={styles.tableRow}>
                   <div className={styles.tableCell}>
                     <div className={styles.itemInfo}>
-                      <img 
+                      <Image 
                         src={listing.photo_urls?.[0]?.photo_url || '/placeholder.jpg'} 
                         alt={listing.title} 
-                        className={styles.itemImage} 
+                        className={styles.itemImage}
+                        width={60}
+                        height={60}
                       />
                       <div>
                         <h3>{listing.title}</h3>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import Image from 'next/image';
 import styles from './page.module.css';
@@ -92,9 +93,12 @@ export default function SignIn() {
               <button type="submit" className={styles.signUpBtn}>
                 Sign In
               </button>
-              <button type="button" className={styles.signInBtn} onClick={() => router.push('/Signup')}>
-                Don't have an account? Sign Up
-              </button>
+              <p>
+                Don&apos;t have an account?{' '}
+                <Link href="/Signup" className={styles.link}>
+                  Sign up
+                </Link>
+              </p>
             </div>
           </form>
         </div>

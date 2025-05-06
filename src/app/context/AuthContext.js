@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
     };
 
     initializeAuth();
-  }, []);
+  }, [fetchUserData]);
 
   const login = async (token, initialUserData) => {
     try {
