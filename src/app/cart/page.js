@@ -54,7 +54,8 @@ export default function Cart() {
                   alt={item.title} 
                   className={styles.itemImage}
                   width={100}
-                  height={100} 
+                  height={100}
+                  style={{ objectFit: 'cover' }}
                 />
                 
                 <div className={styles.itemDetails}>

@@ -15,7 +15,14 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user, isInitialized } = useAuth();
+
+  useEffect(() => {
+    // Redirect to home if already authenticated
+    if (isInitialized && user) {
+      router.push('/');
+    }
+  }, [user, isInitialized, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,25 +31,31 @@ export default function SignIn() {
 
     try {
       const response = await auth.login({ email, password });
-      
-      // The API response has the token directly in response.data
       const { data } = response;
-      console.log('Login response:', data);
 
-      if (!data) {
+      if (!data || !data.access_token) {
         throw new Error('Login failed - invalid response');
       }
 
-      // Now pass the token and user data to the auth context
       await login(data.access_token, data.user);
       router.push('/');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.detail || err.message || 'An error occurred during login');
+      setError(err.response?.data?.detail || 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Don't render anything while checking initial auth state
+  if (!isInitialized) {
+    return <LoadingSpinner fullScreen />;
+  }
+
+  // Don't render the login form if already authenticated
+  if (user) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>

@@ -46,7 +46,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <div className={styles.modalOverlay}>
+    <div className={styles.overlay}>
       <div className={styles.modal}>
         <button className={styles.closeButton} onClick={onClose}>
           <i className="fas fa-times"></i>

@@ -5,6 +5,7 @@ import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
 import CreateListingModal from '../../components/CreateListingModal';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { items } from '@/utils/api';
 
 function ListingsContent() {
@@ -16,7 +17,7 @@ function ListingsContent() {
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState({
-    category: '',
+    category: searchParams.get('category') || '',
     condition: '',
     sort: 'recent'
   });
@@ -31,11 +32,13 @@ function ListingsContent() {
         ...(filters.sort === 'price-high' && { sort: 'price_desc' }),
         ...(searchQuery && { search: searchQuery })
       };
-      const data = await items.getAll(params);
-      setListings(data.data);
+      const response = await items.getAll(params);
+      // API returns array directly
+      setListings(Array.isArray(response) ? response : []);
     } catch (err) {
       setError('Failed to load listings');
       console.error('Error fetching listings:', err);
+      setListings([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -52,7 +55,8 @@ function ListingsContent() {
   const handleCreateListing = async (formData) => {
     try {
       const response = await items.create(formData);
-      const newListing = response.data;
+      // Assuming the API returns the created listing directly
+      const newListing = response.data || response;
       setListings(prev => [newListing, ...prev]);
       return response;
     } catch (err) {
@@ -104,6 +108,8 @@ function ListingsContent() {
             <option value="components">Components</option>
             <option value="test-equipment">Test Equipment</option>
             <option value="tools">Tools</option>
+            <option value="sensors">Sensors</option>
+            <option value="motors">Motors</option>
           </select>
 
           <select 
@@ -113,9 +119,9 @@ function ListingsContent() {
           >
             <option value="">All Conditions</option>
             <option value="new">New</option>
-            <option value="like-new">Used - Like New</option>
-            <option value="good">Used - Good</option>
-            <option value="fair">Used - Fair</option>
+            <option value="like_new">Like New</option>
+            <option value="good">Good</option>
+            <option value="fair">Fair</option>
           </select>
 
           <select 
@@ -132,19 +138,21 @@ function ListingsContent() {
         {error && <div className={styles.error}>{error}</div>}
         
         {loading ? (
-          <div className={styles.loading}>Loading listings...</div>
-        ) : (
+          <LoadingSpinner />
+        ) : listings.length > 0 ? (
           <div className={styles.grid}>
             {listings.map((listing) => (
               <InteractiveListingCard 
                 key={listing.id} 
-                item={{
-                  ...listing,
-                  condition: listing.condition || 'Not Specified',
-                  category: listing.category || 'Other'
-                }} 
+                item={listing}
               />
             ))}
+          </div>
+        ) : (
+          <div className={styles.noResults}>
+            <i className="fas fa-search"></i>
+            <p>No listings found</p>
+            {searchQuery && <p>Try adjusting your search terms or filters</p>}
           </div>
         )}
 
@@ -161,7 +169,7 @@ function ListingsContent() {
 
 export default function Listings() {
   return (
-    <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
       <ListingsContent />
     </Suspense>
   );

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import rateLimiter from './rateLimiter';
 
 export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
 
@@ -20,6 +21,19 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+// Add request interceptor to check rate limit
+client.interceptors.request.use(
+  async (config) => {
+    if (!rateLimiter.isRequestAllowed()) {
+      throw new Error('Request blocked due to rate limiting');
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Add response interceptor to handle errors
 client.interceptors.response.use(
   (response) => response,
@@ -35,11 +49,31 @@ client.interceptors.response.use(
 
 export const auth = {
   register: (data) => client.post('/users/users/', data),
-  login: (creds) => client.post('/auth/login/json', creds),
+  login: async (credentials) => {
+    try {
+      if (!rateLimiter.isRequestAllowed()) {
+        throw new Error('Too many login attempts. Please wait a moment.');
+      }
+      return await client.post('/auth/login/json', credentials);
+    } catch (error) {
+      if (error.message.includes('rate limiting')) {
+        throw new Error('Too many attempts. Please wait a moment before trying again.');
+      }
+      throw error;
+    }
+  },
 };
 
 export const items = {
-  getAll: (params) => client.get('/items/', { params }),
+  getAll: async (params) => {
+    try {
+      const response = await client.get('/items/', { params });
+      // Return the array directly as that's what the API returns
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
   getById: (id) => client.get(`/items/${id}`),
   create: (data) => client.post('/items/', data),
   update: (id, data) => client.put(`/items/${id}`, data),

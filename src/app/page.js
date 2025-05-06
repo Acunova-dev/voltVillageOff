@@ -14,26 +14,28 @@ export default function MainHome() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isInitialized } = useAuth();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isInitialized && !isLoading && !user) {
       router.push('/SignIn');
       return;
     }
+
     if (user) {
       fetchFeaturedListings();
     }
-  }, [user, isLoading, router]);
+  }, [user, isLoading, isInitialized, router]);
 
   const fetchFeaturedListings = async () => {
     try {
       setListingsLoading(true);
       const data = await items.getAll({ limit: 10, listing_status: 'active' });
-      setFeaturedListings(data.data);
+      setFeaturedListings(data || []);
     } catch (err) {
       setError('Failed to load featured listings');
       console.error('Error fetching featured listings:', err);
+      setFeaturedListings([]);
     } finally {
       setListingsLoading(false);
     }
@@ -47,11 +49,11 @@ export default function MainHome() {
   };
 
   // Show loading spinner only during initial auth check
-  if (isLoading) {
+  if (!isInitialized || isLoading) {
     return <LoadingSpinner fullScreen />;
   }
 
-  // If not authenticated and not loading, let the useEffect handle redirect
+  // If not authenticated and initialization is complete, return null (redirect will happen)
   if (!user) {
     return null;
   }
@@ -117,13 +119,7 @@ export default function MainHome() {
               {featuredListings.map((listing) => (
                 <InteractiveListingCard 
                   key={listing.id} 
-                  item={{
-                    ...listing,
-                    image: listing.photo_urls?.[0]?.photo_url || '/placeholder.jpg',
-                    location: listing.location || 'Not specified',
-                    condition: listing.condition || 'Not specified',
-                    category: listing.category || 'Other'
-                  }}
+                  item={listing}
                 />
               ))}
             </div>
