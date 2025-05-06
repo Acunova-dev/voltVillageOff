@@ -9,7 +9,7 @@ const mockConversations = [
   {
     id: 1,
     name: 'John Doe',
-    lastMessage: 'Hey, I\'m interested in your solar panel listing',
+    lastMessage: 'Hey, I&apos;m interested in your solar panel listing',
     timestamp: '2h ago',
     unread: true,
     status: 'Active'
