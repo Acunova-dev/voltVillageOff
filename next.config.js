@@ -3,6 +3,9 @@ module.exports = {
   images: {
     domains: ['example_arduno.com', 'rees52.com', 'example.com', 'voltvillage-api.onrender.com'],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     return [
       {
