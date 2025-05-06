@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
@@ -7,7 +7,7 @@ import InteractiveListingCard from '../../components/InteractiveListingCard';
 import CreateListingModal from '../../components/CreateListingModal';
 import { items } from '@/utils/api';
 
-export default function Listings() {
+function ListingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
@@ -21,11 +21,7 @@ export default function Listings() {
     sort: 'recent'
   });
 
-  useEffect(() => {
-    fetchListings();
-  }, [filters, searchQuery]);
-
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
       const params = {
@@ -43,7 +39,11 @@ export default function Listings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, searchQuery]);
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const handleFilterChange = (field, value) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -156,5 +156,13 @@ export default function Listings() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function Listings() {
+  return (
+    <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+      <ListingsContent />
+    </Suspense>
   );
 }

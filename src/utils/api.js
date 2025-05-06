@@ -47,4 +47,15 @@ export const items = {
   getMyItems: () => client.get('/items/my-items/'),
 };
 
+export const requests = {
+  getAll: (params) => client.get('/requests/', { params }),
+  getById: (id) => client.get(`/requests/${id}`),
+  create: (data) => client.post('/requests/', data),
+  update: (id, data) => client.put(`/requests/${id}`, data),
+  delete: (id) => client.delete(`/requests/${id}`),
+  getMyRequests: () => client.get('/requests/my-requests/'),
+  makeOffer: (requestId, data) => client.post(`/requests/${requestId}/offers`, data),
+  getOffers: (requestId) => client.get(`/requests/${requestId}/offers`),
+};
+
 export default client;

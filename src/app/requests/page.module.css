@@ -1,21 +1,21 @@
 .container {
-  width: 100%;
+  display: flex;
   min-height: 100vh;
   background-color: #f5f5f5;
   padding-top: 80px;
 }
 
 .main {
-  max-width: 1400px;
-  margin: 0 auto;
+  flex: 1;
   padding: 2rem;
+  margin-left: 250px;
 }
 
 .header {
-  margin-bottom: 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 2rem;
 }
 
 .header h1 {
@@ -25,45 +25,36 @@
 }
 
 .createButton {
-  padding: 0.75rem 1.5rem;
-  background: #007bff;
+  background-color: #0070f3;
   color: white;
   border: none;
-  border-radius: 25px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .createButton:hover {
-  background: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
-}
-
-.createButton:active {
-  transform: translateY(0);
+  background-color: #0060df;
 }
 
 .requestsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
 }
 
 .requestCard {
   background: white;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 }
 
 .requestCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
 .requestHeader {
@@ -74,49 +65,36 @@
 }
 
 .requestHeader h3 {
-  font-size: 1.2rem;
-  color: #333;
   margin: 0;
-  flex: 1;
-  padding-right: 1rem;
+  font-size: 1.25rem;
+  color: #333;
 }
 
 .budget {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #007bff;
-  white-space: nowrap;
+  font-weight: 600;
+  color: #0070f3;
+  font-size: 1.1rem;
 }
 
 .description {
-  font-size: 0.95rem;
   color: #666;
-  line-height: 1.5;
   margin-bottom: 1.5rem;
+  line-height: 1.5;
 }
 
 .requestInfo {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .infoItem {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0;
-}
-
-.infoItem:not(:last-child) {
-  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
 }
 
 .label {
-  font-size: 0.9rem;
   color: #666;
-  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .requestFooter {
@@ -129,36 +107,48 @@
 }
 
 .status {
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
-.statusOpen {
+.open {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.closed {
+  background-color: #e8eaed;
+  color: #5f6368;
+}
+
+.inprogress {
   background-color: #e8f5e9;
   color: #2e7d32;
 }
 
 .bidButton {
-  padding: 0.6rem 1.2rem;
-  background: #007bff;
+  background-color: #0070f3;
   color: white;
   border: none;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .bidButton:hover {
-  background: #0056b3;
-  transform: translateY(-1px);
+  background-color: #0060df;
 }
 
-.bidButton:active {
-  transform: translateY(0);
+.error {
+  color: #e00;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #fee;
+  border-radius: 4px;
 }
 
 @media (max-width: 768px) {
@@ -221,4 +211,4 @@
   .bidButton {
     width: 100%;
   }
-} 
+}
