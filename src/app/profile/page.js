@@ -1,6 +1,7 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from './page.module.css';
+import Image from 'next/image';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
 import { items } from '../../utils/api';
@@ -12,15 +13,10 @@ export default function Profile() {
   const [error, setError] = useState(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchUserListings();
-  }, []);
-
-  const fetchUserListings = async () => {
+  const fetchUserListings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await items.getMyItems();
-      // Ensure we handle both possible API response structures
       const listingsData = response.data || response || [];
       setUserListings(Array.isArray(listingsData) ? listingsData : []);
     } catch (err) {
@@ -29,7 +25,11 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchUserListings();
+  }, [fetchUserListings]);
 
   return (
     <div className={styles.container}>
@@ -38,7 +38,20 @@ export default function Profile() {
       <main className={styles.main}>
         <div className={styles.profileHeader}>
           <div className={styles.avatar}>
-            {user?.name?.charAt(0) || '?'}
+            {user?.profile_image ? (
+              <Image
+                src={user.profile_image}
+                alt={`${user.name}'s profile`}
+                width={100}
+                height={100}
+                style={{ 
+                  borderRadius: '50%',
+                  objectFit: 'cover' 
+                }}
+              />
+            ) : (
+              user?.name?.charAt(0) || '?'
+            )}
           </div>
           <div className={styles.userInfo}>
             <h1>{user?.name} {user?.surname}</h1>
