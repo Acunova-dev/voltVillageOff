@@ -2,37 +2,36 @@
   width: 100%;
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-top: 80px;
+  padding-top: 60px;
 }
 
 .main {
-  max-width: 1200px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: 2rem;
+  padding: clamp(1rem, 2vw, 2rem);
 }
 
 .profileHeader {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 3rem;
   background: white;
-  padding: 2rem;
   border-radius: 12px;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
-  background-color: #007bff;
-  color: white;
+  width: clamp(80px, 15vw, 120px);
+  height: clamp(80px, 15vw, 120px);
   border-radius: 50%;
+  background: #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  font-weight: bold;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: #666;
   flex-shrink: 0;
 }
 
@@ -41,31 +40,31 @@
 }
 
 .userInfo h1 {
-  font-size: 2rem;
+  margin: 0;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
   color: #333;
-  margin: 0 0 0.5rem 0;
 }
 
 .userInfo p {
-  font-size: 1rem;
+  margin: 0.5rem 0 0;
   color: #666;
-  margin: 0.25rem 0;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
 }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
 }
 
 .statCard {
   background: white;
-  padding: 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: clamp(1rem, 2vw, 1.5rem);
   text-align: center;
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 }
 
 .statCard:hover {
@@ -73,113 +72,126 @@
 }
 
 .statCard h3 {
-  font-size: 1rem;
+  margin: 0;
   color: #666;
-  margin: 0 0 0.5rem 0;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
   font-weight: 500;
 }
 
 .statCard p {
-  font-size: 1.5rem;
-  color: #007bff;
-  margin: 0;
-  font-weight: 700;
-}
-
-.section {
-  margin-bottom: 3rem;
-}
-
-.section h2 {
-  font-size: 1.5rem;
+  margin: 0.5rem 0 0;
   color: #333;
-  margin: 0 0 1.5rem 0;
+  font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+  font-weight: 600;
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem);
+  background: white;
+  border: none;
+  border-radius: 8px;
+  color: #666;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  background: #f8f8f8;
+  color: #333;
+}
+
+.tab.active {
+  background: #007bff;
+  color: white;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
 }
 
 .settingsForm {
   background: white;
-  padding: 2rem;
   border-radius: 12px;
+  padding: clamp(1.5rem, 3vw, 2rem);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
 }
 
 .formGroup {
-  margin-bottom: 1.5rem;
+  margin-bottom: clamp(1.25rem, 2.5vw, 1.5rem);
 }
 
 .formGroup label {
   display: block;
-  font-size: 0.9rem;
-  color: #666;
   margin-bottom: 0.5rem;
+  color: #333;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
   font-weight: 500;
 }
 
 .formGroup input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
+  padding: clamp(0.75rem, 1.5vw, 1rem);
+  border: 2px solid #ddd;
   border-radius: 8px;
-  font-size: 1rem;
-  color: #333;
-  background-color: #f8f9fa;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  transition: all 0.2s;
 }
 
-.formGroup input:read-only {
-  cursor: not-allowed;
+.formGroup input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
-.editButton {
-  padding: 0.75rem 1.5rem;
+.saveButton {
+  width: 100%;
+  padding: clamp(0.75rem, 1.5vw, 1rem);
   background: #007bff;
   color: white;
   border: none;
-  border-radius: 25px;
-  font-size: 0.95rem;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
-  width: 100%;
+  transition: all 0.2s;
 }
 
-.editButton:hover {
+.saveButton:hover {
   background: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
+  transform: translateY(-2px);
 }
 
-.editButton:active {
-  transform: translateY(0);
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding-top: 64px;
-  }
-
-  .main {
-    padding: 1rem;
-  }
-
+@media (max-width: 640px) {
   .profileHeader {
     flex-direction: column;
     text-align: center;
     padding: 1.5rem;
-    gap: 1rem;
   }
 
   .avatar {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
+    width: 100px;
+    height: 100px;
+    font-size: 2.5rem;
+    margin: 0 auto;
   }
 
   .userInfo h1 {
@@ -191,17 +203,19 @@
     gap: 1rem;
   }
 
-  .statCard {
-    padding: 1rem;
+  .tabs {
+    margin: -0.5rem -1rem 1rem;
+    padding: 0.5rem 1rem;
   }
 
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+  .tab {
+    flex: 0 0 auto;
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
   }
 
   .settingsForm {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 
   .formGroup {
@@ -209,6 +223,7 @@
   }
 
   .formGroup input {
-    padding: 0.6rem 0.8rem;
+    padding: 0.75rem;
+    font-size: 0.9rem;
   }
-} 
+}

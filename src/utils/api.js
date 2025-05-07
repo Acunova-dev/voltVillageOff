@@ -62,6 +62,28 @@ export const auth = {
       throw error;
     }
   },
+  forgotPassword: (data) => client.post('/auth/forgot-password', data),
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to process password reset request');
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const items = {

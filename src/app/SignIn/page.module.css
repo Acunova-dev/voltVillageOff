@@ -63,6 +63,15 @@
   padding: 4px 0;
 }
 
+.success {
+  color: #4caf50;
+  background-color: #e8f5e9;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 .form {
   display: flex;
   flex-direction: column;
@@ -387,6 +396,20 @@ a.secondary {
   background-position: right 0.75rem center;
   background-size: 1rem;
   padding-right: 2.5rem;
+}
+
+.forgotPassword {
+  background: none;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 1rem;
+  padding: 0;
+}
+
+.forgotPassword:hover {
+  color: #333;
 }
 
 .terms {
