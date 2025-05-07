@@ -1,0 +1,384 @@
+.pageWrapper {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+}
+
+.main {
+  flex: 1;
+  padding: 0 1rem;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.backNavigation {
+  margin-bottom: 1.5rem;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  background-color: transparent;
+  color: #555;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #000;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* Image Section */
+.imageSection {
+  background-color: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.mainImageContainer {
+  width: 100%;
+  padding-top: 75%; /* 4:3 aspect ratio */
+  position: relative;
+  background-color: #f5f5f5;
+}
+
+.mainImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2rem;
+}
+
+.thumbnailsContainer {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  overflow-x: auto;
+  background-color: #fff;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail:hover {
+  opacity: 0.9;
+}
+
+.activeThumbnail {
+  border-color: #0070f3;
+  opacity: 1;
+}
+
+/* Details Section */
+.detailsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.headingSection {
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 1rem;
+}
+
+.price {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #0070f3;
+  margin: 0 0 0.5rem;
+}
+
+.listingDate {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.quickInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.infoTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #f0f7ff;
+  color: #0070f3;
+  border-radius: 50px;
+  font-size: 0.9rem;
+}
+
+.infoTag i {
+  font-size: 1rem;
+}
+
+.descriptionBox {
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.descriptionBox h2 {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.descriptionBox p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #444;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.sellerCard {
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.sellerCard h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 0 0 1.25rem;
+  font-weight: 600;
+}
+
+.sellerInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sellerAvatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #0070f3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.sellerDetails {
+  flex: 1;
+}
+
+.sellerDetails h4 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.sellerContact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.contactButton {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: none;
+  background-color: #0070f3;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.contactButton:hover {
+  background-color: #005bb5;
+}
+
+.contactButton i {
+  font-size: 1.1rem;
+}
+
+/* Related Section */
+.relatedSection {
+  margin-top: 3rem;
+}
+
+.relatedSection h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.relatedPlaceholder {
+  padding: 3rem;
+  background-color: #fff;
+  border-radius: 16px;
+  text-align: center;
+  color: #999;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Loading and Error States */
+.loadingContainer,
+.errorContainer,
+.notFoundContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  padding: 2rem;
+}
+
+.loader,
+.error,
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 500px;
+  padding: 2.5rem;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #0070f3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error i,
+.notFound i {
+  font-size: 3rem;
+  color: #ff3e3e;
+  margin-bottom: 1.5rem;
+}
+
+.notFound i {
+  color: #0070f3;
+}
+
+.error h2,
+.notFound h2 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.error p,
+.notFound p,
+.loader p {
+  margin: 0 0 1.5rem;
+  color: #555;
+}
+
+.returnButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.returnButton:hover {
+  background-color: #005bb5;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .contentGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .contentGrid {
+    grid-template-columns: 6fr 5fr;
+  }
+  
+  .main {
+    padding: 0 2rem;
+  }
+  
+  .container {
+    padding: 3rem 2rem;
+  }
+}
