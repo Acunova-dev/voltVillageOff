@@ -138,6 +138,7 @@
   background-color: #0051b3;
 }
 
+<<<<<<< HEAD
 .footer {
   padding: clamp(0.75rem, 2vw, 1.25rem);
   border-top: 1px solid #eee;
@@ -200,3 +201,6 @@
     margin-bottom: 0.5rem;
   }
 }
+=======
+
+>>>>>>> 92f68db6ac3fffa25492cfae66dfd07b24266a86

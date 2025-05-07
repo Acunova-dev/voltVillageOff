@@ -486,3 +486,168 @@ a.secondary {
     font-size: 1.1rem;
   }
 }
+
+
+
+
+
+
+
+.categoryPills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.categoryPill {
+  background: rgba(98, 71, 212, 0.85);
+  border-radius: 50px;
+  padding: 0.7rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+.categoryPill:hover {
+  background: rgba(108, 83, 218, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(98, 71, 212, 0.4);
+}
+
+.categoryPill i {
+  font-size: 1rem;
+  color: white;
+}
+
+/* Update media query to handle responsive design for category pills */
+@media (max-width: 768px) {
+  .categoryPills {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+  }
+  
+  .categoryPill {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .categoryPill i {
+    font-size: 0.9rem;
+  }
+}
+
+
+/* Seller Section Styles */
+.sellerSection {
+  display: flex;
+  background: linear-gradient(to right, #f0f4ff, #e0eaff);
+  border-radius: 12px;
+  margin: 2rem 0;
+  padding: 2.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  align-items: center;
+  gap: 2rem;
+}
+
+.sellerContent {
+  flex: 1;
+}
+
+.sellerContent h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #1a2e4c;
+}
+
+.sellerContent p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #384860;
+}
+
+.sellerBenefits {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.sellerBenefits li {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #384860;
+}
+
+.sellerBenefits li i {
+  color: #4caf50;
+  margin-right: 0.5rem;
+}
+
+.ctaButton {
+  background: linear-gradient(to right, #4361ee, #3a0ca3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 97, 238, 0.4);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+.sellerImage {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.sellerGraphic {
+  width: 100%;
+  height: 300px;
+  background-image: url('/seller-graphic.svg');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sellerSection {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+  
+  .sellerBenefits {
+    grid-template-columns: 1fr;
+  }
+  
+  .sellerGraphic {
+    height: 100px;
+  }
+}
