@@ -48,6 +48,10 @@ export default function MainHome() {
     }
   };
 
+  const handleCreateListing = () => {
+    router.push('/manage-listings');
+  };
+
   // Show loading spinner only during initial auth check
   if (!isInitialized || isLoading) {
     return <LoadingSpinner fullScreen />;
@@ -87,6 +91,38 @@ export default function MainHome() {
               </button>
             </form>
 
+            {/* Categories section */}
+            <div className={styles.categoryPills}>
+              <div 
+                className={styles.categoryPill}
+                onClick={() => router.push('/listings?category=microcontrollers')}
+              >
+                <i className="fas fa-microchip"></i>
+                <span>Microcontrollers</span>
+              </div>
+              <div 
+                className={styles.categoryPill}
+                onClick={() => router.push('/listings?category=components')}
+              >
+                <i className="fas fa-cogs"></i>
+                <span>Components</span>
+              </div>
+              <div 
+                className={styles.categoryPill}
+                onClick={() => router.push('/listings?category=test-equipment')}
+              >
+                <i className="fas fa-tachometer-alt"></i>
+                <span>Test Equipment</span>
+              </div>
+              <div 
+                className={styles.categoryPill}
+                onClick={() => router.push('/listings?category=tools')}
+              >
+                <i className="fas fa-tools"></i>
+                <span>Tools</span>
+              </div>
+            </div>
+
             <div className={styles.heroFeatures}>
               <div className={styles.featureItem}>
                 <i className="fas fa-microchip"></i>
@@ -109,6 +145,27 @@ export default function MainHome() {
           </div>
         </section>
 
+        {/* New Seller Section with CTA */}
+        <section className={styles.sellerSection}>
+          <div className={styles.sellerContent}>
+            <h2>Have Engineering Components to Sell?</h2>
+            <p>Join our community of trusted sellers and reach thousands of engineers and makers.</p>
+            {/* <ul className={styles.sellerBenefits}>
+              <li><i className="fas fa-check-circle"></i> Quick listing process</li>
+              <li><i className="fas fa-check-circle"></i> Reach targeted buyers</li>
+              <li><i className="fas fa-check-circle"></i> Secure payment system</li>
+              <li><i className="fas fa-check-circle"></i> Seller dashboard analytics</li>
+            </ul> */}
+            <button onClick={handleCreateListing} className={styles.ctaButton}>
+              <i className="fas fa-plus-circle"></i> List Your Product
+            </button>
+          </div>
+          <div className={styles.sellerImage}>
+            {/* This would be replaced with an actual image in your CSS */}
+            <div className={styles.sellerGraphic}></div>
+          </div>
+        </section>
+
         <section className={styles.featuredSection}>
           <h2>Featured Listings</h2>
           {error && <div className={styles.error}>{error}</div>}
@@ -124,36 +181,6 @@ export default function MainHome() {
               ))}
             </div>
           )}
-        </section>
-
-        <section className={styles.categoriesSection}>
-          <h2>Browse Categories</h2>
-          <div className={styles.categoryGrid}>
-            <div 
-              className={styles.categoryCard}
-              onClick={() => router.push('/listings?category=microcontrollers')}
-            >
-              Microcontrollers
-            </div>
-            <div 
-              className={styles.categoryCard}
-              onClick={() => router.push('/listings?category=components')}
-            >
-              Components
-            </div>
-            <div 
-              className={styles.categoryCard}
-              onClick={() => router.push('/listings?category=test-equipment')}
-            >
-              Test Equipment
-            </div>
-            <div 
-              className={styles.categoryCard}
-              onClick={() => router.push('/listings?category=tools')}
-            >
-              Tools
-            </div>
-          </div>
         </section>
       </main>
     </div>

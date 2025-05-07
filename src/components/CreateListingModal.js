@@ -91,7 +91,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
               value={formData.location}
               onChange={handleChange}
               required
-              placeholder="e.g., Engineering Building"
+              placeholder="e.g., Bulawayo, Harare"
             />
           </div>
 
