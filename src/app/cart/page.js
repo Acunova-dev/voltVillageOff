@@ -1,39 +1,24 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
+import { getCartItems, updateCartItemQuantity, removeFromCart } from '../../utils/cartStorage';
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      title: 'Arduino Uno',
-      price: 25.99,
-      quantity: 2,
-      seller: 'John Doe',
-      image: '/placeholder.jpg',
-      stock: 5
-    },
-    {
-      id: 2,
-      title: 'Raspberry Pi 4',
-      price: 45.99,
-      quantity: 1,
-      seller: 'Alice Smith',
-      image: '/placeholder.jpg',
-      stock: 3
-    }
-  ]);
+  const [cartItems, setCartItems] = useState([]);
 
+  useEffect(() => {
+    setCartItems(getCartItems());
+  }, []);
   const updateQuantity = (id, newQuantity) => {
-    setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, quantity: Math.min(newQuantity, item.stock) } : item
-    ));
+    const updatedCart = updateCartItemQuantity(id, newQuantity);
+    setCartItems(updatedCart);
   };
 
   const removeItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+    const updatedCart = removeFromCart(id);
+    setCartItems(updatedCart);
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);

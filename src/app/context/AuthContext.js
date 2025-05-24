@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
 
   const fetchUserData = useCallback(async (token) => {
     if (!token) return false;
+    console.log('Fetching user data with token:', token);
     
     try {
       const response = await fetch('https://voltvillage-api.onrender.com/api/v1/users/users/me', {
@@ -47,6 +48,7 @@ export function AuthProvider({ children }) {
     const initializeAuth = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('Initializing auth state with token:', token);
         const storedUser = localStorage.getItem('user');
         
         if (token) {
@@ -75,8 +77,10 @@ export function AuthProvider({ children }) {
     if (!token) {
       throw new Error('No token provided');
     }
-
+    console.log('Logging in with token:', token);
+    console.log('Initial user data:', initialUserData);
     try {
+      console.log('Logging in with token:', token);
       setIsLoading(true);
       setAccessToken(token);
       setUser(initialUserData);

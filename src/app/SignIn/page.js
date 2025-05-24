@@ -20,16 +20,27 @@ export default function SignIn() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  console.log('login function:', login);  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     
     try {
-      await login(email, password);
+      // First, authenticate with the API
+      const response = await auth.login({ email, password });
+      console.log('API login response:', response);
+
+      if (!response?.data?.access_token) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Then use the token to initialize the auth context
+      await login(response.data.access_token, response.data.user);
+      
       router.push('/');
     } catch (err) {
-      setError(err.message || 'Failed to sign in');
+      console.error('SignIn error:', err);
+      setError(err.response?.data?.detail || err.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
@@ -57,12 +68,12 @@ export default function SignIn() {
     <div className={styles.container}>
       {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
-        <div className={styles.logoContainer}>
-          <Image
+        <div className={styles.logoContainer}>          <Image
             src="/vercel.svg"
             alt="Logo"
             width={40}
             height={40}
+            style={{ height: '40px' }}
             className={styles.logo}
           />
           <h2>voltVillage</h2>

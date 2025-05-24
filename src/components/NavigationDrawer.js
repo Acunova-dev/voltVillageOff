@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '../app/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import styles from './NavigationDrawer.module.css';
@@ -24,12 +25,25 @@ const NavigationDrawer = () => {
   return (
     <>
       <TopLoadingBar />
-      <nav className={styles.navbar}>
-        <div className={styles.navContent}>
-
+      <nav className={styles.navbar}>        <div className={styles.navContent}>
           <Link href="/" className={styles.logo}>
-            voltVillage
+            <Image
+              src="/logo official.png"
+              alt="voltVillage Logo"
+              width={110}
+              height={20}
+              priority
+            />
           </Link>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className={styles.menuButton} 
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+          >
+            <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'}`}></i>
+          </button>
 
           {/* Desktop Navigation */}
           <div className={styles.desktopNav}>
@@ -92,9 +106,98 @@ const NavigationDrawer = () => {
               </>
             )}
           </div>
+        </div>      </nav>      {/* Mobile Navigation */}
+      
+      <div className={`${styles.mobileNav} ${isOpen ? styles.open : ''}`}>
+        <div className={styles.mobileHeader}>
+          <Image
+            src="/logo official.png"
+            alt="voltVillage Logo"
+            width={100}
+            height={18}
+            priority
+          />
+          <button 
+            className={styles.closeButton}
+            onClick={() => setIsOpen(false)}
+            aria-label="Close menu"
+          >
+            <i className="fas fa-times"></i>
+          </button>
         </div>
-      </nav>
 
+        <div className={styles.mobileLinks}>
+          <Link 
+            href="/" 
+            className={`${styles.mobileLink} ${isActive('/') ? styles.active : ''}`}
+            onClick={() => setIsOpen(false)}
+          >
+            <i className="fas fa-home"></i> Home
+          </Link>
+
+          <Link 
+            href="/listings" 
+            className={`${styles.mobileLink} ${isActive('/listings') ? styles.active : ''}`}
+            onClick={() => setIsOpen(false)}
+          >
+            <i className="fas fa-search"></i> Browse Listings
+          </Link>
+
+          {user && (
+            <>
+              <Link 
+                href="/manage-listings" 
+                className={`${styles.mobileLink} ${isActive('/manage-listings') ? styles.active : ''}`}
+                onClick={() => setIsOpen(false)}
+              >
+                <i className="fas fa-cogs"></i> Manage Listings
+              </Link>
+
+              <Link 
+                href="/messages" 
+                className={`${styles.mobileLink} ${isActive('/messages') ? styles.active : ''}`}
+                onClick={() => setIsOpen(false)}
+              >
+                <i className="fas fa-envelope"></i> Messages
+              </Link>
+
+              <Link 
+                href="/requests" 
+                className={`${styles.mobileLink} ${isActive('/requests') ? styles.active : ''}`}
+                onClick={() => setIsOpen(false)}
+              >
+                <i className="fas fa-bullhorn"></i> Requests
+              </Link>
+
+              <Link 
+                href="/cart" 
+                className={`${styles.mobileLink} ${isActive('/cart') ? styles.active : ''}`}
+                onClick={() => setIsOpen(false)}
+              >
+                <i className="fas fa-shopping-cart"></i> Cart
+              </Link>
+
+              <Link 
+                href="/profile" 
+                className={`${styles.mobileLink} ${isActive('/profile') ? styles.active : ''}`}
+                onClick={() => setIsOpen(false)}
+              >
+                <i className="fas fa-user"></i> Profile
+              </Link>
+
+              <button 
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }} 
+                className={styles.mobileLogoutButton}
+              >
+                <i className="fas fa-sign-out-alt"></i> Logout
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </>
   );
 };
