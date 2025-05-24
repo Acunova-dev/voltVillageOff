@@ -54,7 +54,12 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
         
         <h2>Create New Listing</h2>
         
-        {error && <div className={styles.error}>{error}</div>}
+        {error && (
+          <div className={styles.error}>
+            <i className="fas fa-exclamation-circle"></i>
+            {error}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>

@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
 import InteractiveListingCard from '../../components/InteractiveListingCard';
@@ -10,7 +11,7 @@ import { items } from '@/utils/api';
 
 function ListingsContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router = useRouter();  const [inputValue, setInputValue] = useState(searchParams.get('search') || '');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,13 +64,20 @@ function ListingsContent() {
       console.error('Error creating listing:', err);
       throw new Error(err.response?.data?.message || 'Failed to create listing');
     }
-  };
-
-  const handleSearch = (e) => {
+  };  const handleSearch = (e) => {
     e.preventDefault();
-    const query = searchQuery.trim();
+    const query = inputValue.trim();
+    setSearchQuery(query); // This will trigger the fetchListings
     router.push(`/listings${query ? `?search=${encodeURIComponent(query)}` : ''}`);
   };
+
+  // Add new effect to clear search when input is empty
+  useEffect(() => {
+    if (inputValue.trim() === '') {
+      setSearchQuery('');
+      router.push('/listings');
+    }
+  }, [inputValue, router]);
 
   return (
     <div className={styles.container}>
@@ -88,8 +96,8 @@ function ListingsContent() {
           <input
             type="text"
             placeholder="Search listings..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             className={styles.searchInput}
           />
           <button type="submit" className={styles.searchButton}>
@@ -135,7 +143,12 @@ function ListingsContent() {
           </select>
         </div>
 
-        {error && <div className={styles.error}>{error}</div>}
+        {error && (
+          <div className={styles.error}>
+            <i className="fas fa-exclamation-circle"></i>
+            {error}
+          </div>
+        )}
         
         {loading ? (
           <LoadingSpinner />
@@ -150,8 +163,15 @@ function ListingsContent() {
           </div>
         ) : (
           <div className={styles.noResults}>
-            <i className="fas fa-search"></i>
-            <p>No listings found</p>
+            <Image
+              src="/looking_not found.png"
+              alt="No results found"
+              width={200}
+              height={200}
+              style={{ objectFit: 'contain' }}
+            />
+            <h3>No Listings Found</h3>
+            <p>We couldn't find any listings matching your criteria.</p>
             {searchQuery && <p>Try adjusting your search terms or filters</p>}
           </div>
         )}

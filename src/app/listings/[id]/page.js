@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import styles from './ListingDetail.module.css';
 import NavigationDrawer from '../../../components/NavigationDrawer';
+import { addToCart } from '../../../utils/cartStorage';
 
 const ListingDetail = ({ params }) => {
   const [listing, setListing] = useState(null);
@@ -35,6 +36,13 @@ const ListingDetail = ({ params }) => {
       fetchListing();
     }
   }, [id]);
+  
+  const handleAddToCart = () => {
+    if (listing) {
+      addToCart(listing);
+      router.push('/cart');
+    }
+  };
 
   const handleContact = () => {
     if (listing && listing.seller_id) {
@@ -196,12 +204,12 @@ const ListingDetail = ({ params }) => {
                     </div>
                   </div>
                 )}
-                {/* <button 
+                <button 
                   className={styles.contactButton}
-                  onClick={handleContact}
+                  onClick={handleAddToCart}
                 >
-                  <i className="fas fa-comments"></i> Contact Seller
-                </button> */}
+                  <i className="fas fa-shopping-cart"></i> I'm Interested
+                </button>
               </div>
             </div>
           </div>

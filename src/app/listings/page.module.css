@@ -2,124 +2,132 @@
   width: 100%;
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding-top: 80px;
+  padding-top: 60px;
 }
 
 .main {
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  padding: 2rem;
+  padding: clamp(1rem, 2vw, 2rem);
 }
 
 .header {
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
   align-items: center;
 }
 
 .header h1 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
   color: #333;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .searchBar {
+  flex: 1;
+  min-width: 280px;
   display: flex;
   align-items: center;
-  max-width: 800px;
-  margin: 0 auto 2rem;
-  position: relative;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: #fff;
+  padding: 0.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
-.searchIcon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+.searchBar:focus-within {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.searchBar i {
   color: #666;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  margin-left: 0.75rem;
 }
 
 .searchInput {
   flex: 1;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  padding: 0.75rem;
+  border: none;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  color: #333;
+  background: transparent;
+  min-width: 0; /* Prevents input from overflowing */
 }
 
 .searchInput:focus {
   outline: none;
-  border-color: #6247d4;
-  box-shadow: 0 0 0 2px rgba(98, 71, 212, 0.2);
 }
 
-.searchBar i {
-  position: absolute;
-  left: 1rem;
-  color: #666;
-  font-size: 1rem;
+.searchInput::placeholder {
+  color: #999;
 }
 
 .searchButton {
-  padding: 1rem 2rem;
-  margin-left: 1rem;
-  background: linear-gradient(135deg, #6247d4 0%, #2c1a87 100%);
+  padding: 0.75rem 1.5rem;
+  background-color: #004aad;
   color: white;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .searchButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(98, 71, 212, 0.3);
+  background-color: #003c8a;
+}
+
+.searchButton:active {
+  transform: translateY(1px);
 }
 
 .filters {
+  width: 100%;
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
   flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .filterButton {
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   border: 2px solid #ddd;
-  border-radius: 25px;
+  border-radius: 8px;
   background: white;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
+  color: #333;
+  font-size: clamp(0.875rem, 1.2vw, 1rem);
   font-weight: 500;
-  text-transform: capitalize;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: auto;
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
 }
 
 .filterButton:hover {
-  background: #f8f9fa;
   border-color: #007bff;
-  color: #007bff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .filterButton.active {
   background: #007bff;
   border-color: #007bff;
   color: white;
-  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.25);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.25);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: clamp(1rem, 2vw, 2rem);
 }
 
 .card {
@@ -191,11 +199,11 @@
 
 .addButton {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+  bottom: clamp(1rem, 4vw, 2rem);
+  right: clamp(1rem, 4vw, 2rem);
+  width: clamp(50px, 10vw, 60px);
+  height: clamp(50px, 10vw, 60px);
+  border-radius: 50%;
   background: #007bff;
   color: white;
   border: none;
@@ -204,7 +212,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
   transition: all 0.3s ease;
   z-index: 100;
 }
@@ -268,7 +276,88 @@
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
+.error {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+  text-align: center;
+  border: 1px solid #ffebee;
+  color: #d32f2f;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.error i {
+  font-size: 1.25rem;
+}
+
+.noResults {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1rem;
+  background: #fff;
+  border-radius: 12px;
+  margin: 2rem 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.noResults img {
+  width: 200px;
+  height: auto;
+  margin-bottom: 1.5rem;
+}
+
+.noResults h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0 0 0.5rem;
+}
+
+.noResults p {
+  color: #666;
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.noResults p:last-child {
+  color: #0070f3;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchBar {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .filters {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.5rem;
+    margin: -0.5rem;
+    padding: 0.5rem;
+    flex-wrap: nowrap;
+  }
+
+  .filterButton {
+    flex: 0 0 auto;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+
   .container {
     padding-top: 64px;
   }
@@ -277,29 +366,8 @@
     padding: 1rem;
   }
 
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
   .header h1 {
     font-size: 1.5rem;
-  }
-
-  .filters {
-    gap: 0.5rem;
-  }
-
-  .filterButton {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-    border-width: 1px;
   }
 
   .addButton {
@@ -319,5 +387,15 @@
     padding: 0.5rem 2rem 0.5rem 0.8rem;
     font-size: 0.85rem;
     border-width: 1px;
+  }
+}
+
+@media (max-width: 480px) {
+  .addButton {
+    bottom: 1rem;
+    right: 1rem;
+    width: 45px;
+    height: 45px;
+    font-size: 1.25rem;
   }
 }
