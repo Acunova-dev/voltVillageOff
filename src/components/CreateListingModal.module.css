@@ -1,107 +1,100 @@
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: clamp(1rem, 3vw, 2rem);
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
 }
 
 .modal {
   background: white;
-  border-radius: 16px;
-  padding: 32px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
+  border-radius: 12px;
+  width: min(600px, 100%);
+  max-height: min(90vh, 800px);
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 8px 32px rgba(98, 71, 212, 0.2);
-  animation: slideIn 0.3s ease;
+  animation: modalEnter 0.3s ease-out;
+}
+
+.header {
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  color: #333;
 }
 
 .closeButton {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   background: none;
   border: none;
-  font-size: 1.5rem;
   color: #666;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
 }
 
 .closeButton:hover {
-  background: rgba(98, 71, 212, 0.1);
-  color: #6247d4;
-  transform: rotate(90deg);
+  background: #f5f5f5;
+  color: #333;
 }
 
-.modal h2 {
-  margin: 0 0 24px;
-  color: #2c1a87;
-  font-size: 1.75rem;
-  font-weight: 600;
+.content {
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
 }
 
 .formGroup {
-  margin-bottom: 24px;
-}
-
-.formRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .formGroup label {
-  display: block;
-  margin-bottom: 8px;
-  color: #4a5568;
-  font-size: 0.95rem;
+  color: #333;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
   font-weight: 500;
 }
 
 .formGroup input,
 .formGroup textarea,
 .formGroup select {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 1rem;
-  color: #4a5568;
-  background-color: rgba(255, 255, 255, 0.8);
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.formGroup input:hover,
-.formGroup textarea:hover,
-.formGroup select:hover {
-  border-color: #cbd5e0;
+  padding: clamp(0.75rem, 1.5vw, 1rem);
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  transition: all 0.2s;
 }
 
 .formGroup input:focus,
 .formGroup textarea:focus,
 .formGroup select:focus {
   outline: none;
-  border-color: #6247d4;
-  box-shadow: 0 0 0 3px rgba(98, 71, 212, 0.15);
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 .formGroup textarea {
@@ -109,111 +102,148 @@
   resize: vertical;
 }
 
-.error {
-  background: #fff5f5;
-  color: #e53e3e;
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #feb2b2;
+.dropzone {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.actions {
+.dropzone:hover {
+  border-color: #007bff;
+  background: rgba(0, 123, 255, 0.05);
+}
+
+.dropzoneText {
+  color: #666;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+}
+
+.imagePreview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.previewImage {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.footer {
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border-top: 1px solid #eee;
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
-  margin-top: 32px;
+  gap: 1rem;
+  position: sticky;
+  bottom: 0;
+  background: white;
 }
 
-.submitButton,
-.cancelButton {
-  padding: 12px 28px;
-  border-radius: 12px;
-  font-size: 1rem;
+.button {
+  padding: clamp(0.75rem, 1.5vw, 1rem) clamp(1.25rem, 2.5vw, 1.5rem);
+  border-radius: 8px;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.submitButton {
-  background: linear-gradient(135deg, #6247d4 0%, #2c1a87 100%);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 12px rgba(98, 71, 212, 0.25);
-}
-
-.submitButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(98, 71, 212, 0.35);
-}
-
-.submitButton:active {
-  transform: translateY(0);
-}
-
-.submitButton:disabled {
-  background: #cbd5e0;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  transition: all 0.2s;
+  min-height: 44px;
 }
 
 .cancelButton {
-  background: white;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: none;
+  border: 1px solid #ddd;
+  color: #666;
 }
 
 .cancelButton:hover {
-  border-color: #6247d4;
-  color: #6247d4;
-  background: rgba(98, 71, 212, 0.05);
+  background: #f5f5f5;
+  border-color: #ccc;
 }
 
-@keyframes fadeIn {
+.submitButton {
+  background: #007bff;
+  border: none;
+  color: white;
+}
+
+.submitButton:hover {
+  background: #0056b3;
+}
+
+.submitButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  text-align: center;
+  border: 1px solid #ffebee;
+  color: #d32f2f;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.error i {
+  font-size: 1.25rem;
+}
+
+@keyframes modalEnter {
   from {
     opacity: 0;
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+@media (max-width: 480px) {
+  .overlay {
+    padding: 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@media (max-width: 600px) {
   .modal {
-    padding: 24px;
-  }
-
-  .formRow {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .actions {
-    flex-direction: column-reverse;
-  }
-
-  .submitButton,
-  .cancelButton {
     width: 100%;
-    justify-content: center;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .header {
+    padding: 1rem;
+  }
+
+  .content {
+    padding: 1rem;
+  }
+
+  .footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .formGroup input,
+  .formGroup textarea,
+  .formGroup select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
   }
 }

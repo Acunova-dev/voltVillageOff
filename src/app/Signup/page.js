@@ -8,6 +8,7 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import axios from 'axios';
 import { API_BASE_URL, auth } from '@/utils/api';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ export default function SignUp() {
     password: '',
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -33,9 +35,9 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      // Send registration data to backend as JSON
       console.log("Sending registration data to backend...");
       console.log(JSON.stringify(formData));
       const { data } = await axios.post('https://voltvillage-api.onrender.com/api/v1/users/users', 
@@ -46,15 +48,18 @@ export default function SignUp() {
           },
         }
       );
+      router.push('/SignIn');
     } catch (err) {
-      // setError(err.response?.data?.message || err.message || 'An error occurred');
-      setError(err.response.data.detail);
-      console.error(`create user error `, err.response.data.detail);
+      setError(err.response?.data?.detail || 'An error occurred');
+      console.error(`create user error `, err.response?.data?.detail);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className={styles.container}>
+      {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
         <div className={styles.logoContainer}>
           <Image
@@ -157,10 +162,15 @@ export default function SignUp() {
               </label>
             </div>
             <div className={styles.actions}>
-              <button type="submit" className={styles.signUpBtn}>
-                Sign Up
+              <button type="submit" className={styles.signUpBtn} disabled={isLoading}>
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
               </button>
-              <button type="button" className={styles.signInBtn} onClick={() => router.push('/SignIn')}>
+              <button 
+                type="button" 
+                className={styles.signInBtn} 
+                onClick={() => router.push('/SignIn')}
+                disabled={isLoading}
+              >
                 Already have an account? Sign In
               </button>
             </div>

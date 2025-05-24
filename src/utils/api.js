@@ -50,18 +50,56 @@ client.interceptors.response.use(
 export const auth = {
   register: (data) => client.post('/users/users/', data),
   login: async (credentials) => {
+    console.log('Login attempt with credentials:', credentials);
     try {
       if (!rateLimiter.isRequestAllowed()) {
         throw new Error('Too many login attempts. Please wait a moment.');
       }
-      return await client.post('/auth/login/json', credentials);
+      const response = await client.post('/auth/login/json', {
+        email: credentials.email,
+        password: credentials.password
+      });
+      
+      console.log('Login API response:', response);
+      
+      if (!response?.data?.access_token) {
+        throw new Error('Invalid response from server');
+      }
+      
+      return response;
     } catch (error) {
+      console.error('API Login error:', error);
       if (error.message.includes('rate limiting')) {
         throw new Error('Too many attempts. Please wait a moment before trying again.');
+      }
+      if (error.response?.status === 401) {
+        throw new Error('Invalid email or password');
       }
       throw error;
     }
   },
+  forgotPassword: (data) => client.post('/auth/forgot-password', data),
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to process password reset request');
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const items = {

@@ -1,119 +1,169 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '../context/AuthContext';
-import Image from 'next/image';
+import { useState } from 'react';
 import styles from './page.module.css';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../context/AuthContext';
 import { auth } from '@/utils/api';
+import Image from 'next/image';
+import Link from 'next/link';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function SignIn() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
-  const { login, user, isInitialized } = useAuth();
 
-  useEffect(() => {
-    // Redirect to home if already authenticated
-    if (isInitialized && user) {
-      router.push('/');
-    }
-  }, [user, isInitialized, router]);
-
-  const handleSubmit = async (e) => {
+  console.log('login function:', login);  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
+    
     try {
+      // First, authenticate with the API
       const response = await auth.login({ email, password });
-      const { data } = response;
+      console.log('API login response:', response);
 
-      if (!data || !data.access_token) {
-        throw new Error('Login failed - invalid response');
+      if (!response?.data?.access_token) {
+        throw new Error('Invalid response from server');
       }
 
-      await login(data.access_token, data.user);
+      // Then use the token to initialize the auth context
+      await login(response.data.access_token, response.data.user);
+      
       router.push('/');
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.detail || 'Invalid email or password');
+      console.error('SignIn error:', err);
+      setError(err.response?.data?.detail || err.message || 'Failed to sign in');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Don't render anything while checking initial auth state
-  if (!isInitialized) {
-    return <LoadingSpinner fullScreen />;
-  }
-
-  // Don't render the login form if already authenticated
-  if (user) {
-    return null;
-  }
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setResetSuccess(false);
+    setIsLoading(true);
+    
+    try {
+      await auth.forgotPassword({ email: forgotPasswordEmail });
+      setResetSuccess(true);
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to process password reset request');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
       {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
-        <div className={styles.logoContainer}>
-          <Image
+        <div className={styles.logoContainer}>          <Image
             src="/vercel.svg"
             alt="Logo"
             width={40}
             height={40}
+            style={{ height: '40px' }}
             className={styles.logo}
           />
           <h2>voltVillage</h2>
         </div>
-        <h1>Welcome to</h1>
+        <h1>Welcome back to</h1>
         <h2>voltVillage</h2>
         <p className={styles.subtitle}>Your trusted marketplace for university engineering components.</p>
       </div>
       <div className={styles.rightPanel}>
         <div className={styles.formContainer}>
-          <h2>Sign In</h2>
-          {error && <p className={styles.error}>{error}</p>}
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
+          <h2>{showForgotPassword ? 'Reset Password' : 'Sign In to your account'}</h2>
+          {resetSuccess && (
+            <div className={styles.success}>
+              If a matching account was found, a password reset email has been sent.
             </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            <div className={styles.actions}>
-              <button type="submit" className={styles.signUpBtn}>
-                Sign In
+          )}
+          {error && <div className={styles.error}>{error}</div>}
+          
+          {!showForgotPassword ? (
+            <>
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit" className={styles.signUpBtn} disabled={isLoading}>
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+              <button 
+                onClick={() => setShowForgotPassword(true)}
+                className={styles.forgotPassword}
+              >
+                Forgot Password?
               </button>
-              <p>
-                Don&apos;t have an account?{' '}
-                <Link href="/Signup" className={styles.link}>
-                  Sign up
-                </Link>
-              </p>
-            </div>
-          </form>
+              <div className={styles.actions}>
+                <button 
+                  type="button" 
+                  className={styles.signInBtn}
+                  onClick={() => router.push('/Signup')}
+                >
+                  Don't have an account? Sign Up
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <form onSubmit={handleForgotPassword} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="forgotPasswordEmail">Email Address</label>
+                  <input
+                    type="email"
+                    id="forgotPasswordEmail"
+                    placeholder="Enter your email"
+                    value={forgotPasswordEmail}
+                    onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit" className={styles.signUpBtn} disabled={isLoading}>
+                  {isLoading ? 'Sending...' : 'Reset Password'}
+                </button>
+              </form>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(false)}
+                className={styles.forgotPassword}
+              >
+                Back to Sign In
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
