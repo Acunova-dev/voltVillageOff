@@ -5,26 +5,21 @@ import { useRouter } from 'next/navigation';
 import styles from './ListingDetail.module.css';
 import NavigationDrawer from '../../../components/NavigationDrawer';
 import { addToCart } from '../../../utils/cartStorage';
+import { items } from '../../../utils/api';
 
 const ListingDetail = ({ params }) => {
+  const { id } = React.use(params);
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const router = useRouter();
-  const { id } = params;
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const response = await fetch(`/api/v1/items/${id}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch listing');
-        }
-        
-        const data = await response.json();
-        setListing(data);
+        const response = await items.getById(id);
+        setListing(response.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -44,11 +39,15 @@ const ListingDetail = ({ params }) => {
     }
   };
 
-  const handleContact = () => {
-    if (listing && listing.seller_id) {
-      router.push(`/messages?seller=${listing.seller_id}`);
-    }
-  };
+const handleContact = async () => {
+  if (listing && listing.seller_id) {
+    // User info to send
+    const userInfo = listing.seller
+    // Pass user info as query params (encoded)
+    const userInfoStr = encodeURIComponent(JSON.stringify(userInfo));
+    router.push(`/messages?seller=${listing.seller_id}&user=${userInfoStr}`);
+  }
+};
 
   const handleBack = () => {
     router.back();
@@ -129,7 +128,7 @@ const ListingDetail = ({ params }) => {
                   width={600}
                   height={600}
                   className={styles.mainImage}
-                  priority
+                  unoptimized
                 />
               </div>
               
@@ -206,7 +205,7 @@ const ListingDetail = ({ params }) => {
                 )}
                 <button 
                   className={styles.contactButton}
-                  onClick={handleAddToCart}
+                  onClick={handleContact}
                 >
                   <i className="fas fa-shopping-cart"></i> I'm Interested
                 </button>

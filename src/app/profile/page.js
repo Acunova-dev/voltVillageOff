@@ -44,6 +44,7 @@ export default function Profile() {
                 alt={`${user.name}'s profile`}
                 width={100}
                 height={100}
+                unoptimized
                 style={{ 
                   borderRadius: '50%',
                   objectFit: 'cover' 

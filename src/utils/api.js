@@ -1,7 +1,8 @@
 import axios from 'axios';
 import rateLimiter from './rateLimiter';
 
-export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
+// export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
+export const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -128,6 +129,28 @@ export const requests = {
   getMyRequests: () => client.get('/requests/my-requests/'),
   makeOffer: (requestId, data) => client.post(`/requests/${requestId}/offers`, data),
   getOffers: (requestId) => client.get(`/requests/${requestId}/offers`),
+};
+
+export const getConversations = async (skip = 0, limit = 100) => {
+  try {
+    const response = await client.get(`/chat/conversations/`, {
+      params: { skip, limit },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMessages = async (conversationId, skip = 0, limit = 100) => {
+  try {
+    const response = await client.get(`/chat/messages/${conversationId}`, {
+      params: { skip, limit },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export default client;
