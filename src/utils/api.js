@@ -103,6 +103,7 @@ export const forgotPassword = async (email) => {
   }
 };
 
+
 export const items = {
   getAll: async (params) => {
     try {
@@ -148,6 +149,26 @@ export const getMessages = async (conversationId, skip = 0, limit = 100) => {
       params: { skip, limit },
     });
     return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendMessage = async (message) => {
+  try {
+    // Do NOT JSON.stringify here, just send the plain object
+    const response = await client.post(`/chat/messages`, message);
+    console.log('API sendMessage response:', response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getCurrentUser = async () => {
+  try {
+    const response = await client.get('/users/users/me');
+    return response;
   } catch (error) {
     throw error;
   }

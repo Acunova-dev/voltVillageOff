@@ -39,15 +39,19 @@ const ListingDetail = ({ params }) => {
     }
   };
 
-const handleContact = async () => {
-  if (listing && listing.seller_id) {
-    // User info to send
-    const userInfo = listing.seller
-    // Pass user info as query params (encoded)
-    const userInfoStr = encodeURIComponent(JSON.stringify(userInfo));
-    router.push(`/messages?seller=${listing.seller_id}&user=${userInfoStr}`);
-  }
-};
+  const handleContact = async () => {
+    if (listing && listing.seller_id) {
+      // User info to send
+      const userInfo = listing.seller;
+      // Pass user info as query params (encoded)
+      const userInfoStr = encodeURIComponent(JSON.stringify(userInfo));
+      // Compose the message with the current page link
+      const itemLink = window.location.href;
+      const message = `hallo, am interested in this item ${itemLink}`;
+      // Pass the message as a query param
+      router.push(`/messages?seller=${listing.seller_id}&user=${userInfoStr}&message=${encodeURIComponent(message)}`);
+    }
+  };
 
   const handleBack = () => {
     router.back();

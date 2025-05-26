@@ -1,30 +1,34 @@
 "use client"
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Fragment } from 'react';
 import styles from './page.module.css';
 import { FaSearch, FaCircle } from 'react-icons/fa';
 import { IoMdSend } from 'react-icons/io';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import { useSearchParams } from 'next/navigation'
-import { getConversations, getMessages } from '@/utils/api';
+import { getConversations, getMessages, sendMessage } from '@/utils/api';
 import { useAuth } from '../context/AuthContext';
 import { format, isToday, isYesterday, isThisWeek, parseISO } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 export default function Messages() {
   const searchParams = useSearchParams();
   const sellerId = searchParams.get('seller');
   const userParam = searchParams.get('user');
-  const { user } = useAuth();
-  console.log('Current user:', user);
+  const defaultMessage = searchParams.get('message') || '';
+  const { user, isLoading, isInitialized } = useAuth();
+  const router = useRouter();
+  
   let userInfo = null;
+  // Remove broken JSON.parse for defaultMessage, just use the string
   if (userParam) {
     try {
       userInfo = JSON.parse(decodeURIComponent(userParam));
       console.log('Parsed user info:', userInfo.name, userInfo.surname);
     } catch (e) {
+      console.error('Error parsing user info:', e);
       userInfo = null;
     }
   }
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -35,6 +39,13 @@ export default function Messages() {
   const [showChat, setShowChat] = useState(false);
   const wsRef = useRef(null);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const messagesEndRef = useRef(null);
+  const selectedConversationRef = useRef(null);
+
+  // Update ref when selectedConversation changes
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
 
   // Helper to get the display name for a conversation or selected user
   function getDisplayName(conv) {
@@ -59,6 +70,14 @@ export default function Messages() {
     return colors[index];
   }
 
+  // Auth check
+  useEffect(() => {
+    if (isInitialized && !isLoading && !user) {
+      router.push('/SignIn');
+      return;
+    }
+  }, [user, isLoading, isInitialized, router]);
+    
   // Check if mobile and handle resize
   useEffect(() => {
     const checkMobile = () => {
@@ -73,29 +92,39 @@ export default function Messages() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Fetch conversations
   useEffect(() => {
     const fetchConversations = async () => {
+      if (!user?.id) return;
+      
       try {
         const data = await getConversations();
         setConversations(data);
         setLoading(false);
+        
         if (sellerId) {
+          // Convert sellerId to number for comparison if needed
+          const sellerIdNum = Number(sellerId);
+          
           // Find conversation with sellerId (as user1_id or user2_id)
           const found = data.find(
-            (conv) => conv.user1_id == sellerId || conv.user2_id == sellerId
+            (conv) => conv.user1_id === sellerIdNum || conv.user2_id === sellerIdNum
           );
+          
           if (found) {
             // Determine the seller user object from the conversation
             let sellerUser = null;
-            if (found.user1_id == sellerId && found.user1) {
+            if (found.user1_id === sellerIdNum && found.user1) {
               sellerUser = found.user1;
-            } else if (found.user2_id == sellerId && found.user2) {
+            } else if (found.user2_id === sellerIdNum && found.user2) {
               sellerUser = found.user2;
             }
+            
             setSelectedConversation({
               ...found,
               displayUser: sellerUser || null
             });
+            
             // If mobile and we have a selected conversation from URL, show chat
             if (window.innerWidth <= 768) {
               setShowChat(true);
@@ -105,13 +134,14 @@ export default function Messages() {
             setSelectedConversation({
               id: null,
               user1_id: user?.id || null,
-              user2_id: sellerId,
+              user2_id: sellerIdNum,
               lastMessage: '',
               unread: false,
               status: 'Active',
               isNew: true,
               userInfo
             });
+            
             // If mobile and we have userInfo from URL, show chat
             if (window.innerWidth <= 768) {
               setShowChat(true);
@@ -119,11 +149,13 @@ export default function Messages() {
           }
         }
       } catch (e) {
+        console.error('Error fetching conversations:', e);
         setLoading(false);
       }
     };
+    
     fetchConversations();
-  }, [sellerId, userParam, user]);
+  }, [sellerId, userParam, user?.id]);
 
   // Fetch messages when a conversation is selected
   useEffect(() => {
@@ -133,6 +165,7 @@ export default function Messages() {
           const msgs = await getMessages(selectedConversation.id);
           setMessages(msgs);
         } catch (e) {
+          console.error('Error fetching messages:', e);
           setMessages([]);
         }
       } else {
@@ -149,11 +182,17 @@ export default function Messages() {
 
   // Handle conversation selection
   const handleConversationSelect = (conv) => {
+    console.log("clicked conv", conv);
+    
     const conversationData = {
       ...conv,
-      displayUser: conv.user1_id == user?.id ? conv.user2 : conv.user1
+      displayUser: conv.user1_id === user?.id ? conv.user2 : conv.user1
     };
+
     setSelectedConversation(conversationData);
+    
+    // Clear unread count when selecting conversation
+    setUnreadCounts(prev => ({ ...prev, [conv.id]: 0 }));
     
     // On mobile, show the chat when a conversation is selected
     if (isMobile) {
@@ -167,24 +206,71 @@ export default function Messages() {
   };
 
   // Handle send message
-  const handleSendMessage = () => {
-    if (newMessage.trim() && selectedConversation && wsRef.current) {
-      const messageData = {
-        message: newMessage,
-        conversation_id: selectedConversation.id,
-        sender_id: user?.id,
-        receiver_id: selectedConversation.displayUser?.id || selectedConversation.user2_id,
-      };
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation) return;
+
+    const trimmedMessage = newMessage.trim();
+    setNewMessage(''); // Clear input immediately for better UX
+
+    // If it's a new conversation (no ID), create it first
+    if (!selectedConversation.id) {
+      try {
+        const messData = {
+          content: trimmedMessage,
+          receiver_id: selectedConversation.displayUser?.id || selectedConversation.user2_id
+        };
+        
+        const response = await sendMessage(messData);
+        console.log('New conversation message sent:', response.data);
+        
+        // Update the selected conversation with the new conversation ID
+        const newConversationId = response.data.conversation_id;
+        setSelectedConversation(prev => ({
+          ...prev,
+          id: newConversationId
+        }));
+        
+        // Add message to current chat
+        setMessages(prev => [...prev, response.data]);
+        
+        return;
+      } catch (error) {
+        console.error('Error sending message to new conversation:', error);
+        setNewMessage(trimmedMessage); // Restore message on error
+        return;
+      }
+    }
+
+    // For existing conversations
+    const messageData = {
+      message: trimmedMessage,
+      conversation_id: selectedConversation.id,
+      sender_id: user?.id,
+      receiver_id: selectedConversation.displayUser?.id || selectedConversation.user2_id,
+    };
+
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      // Send via WebSocket
       wsRef.current.send(JSON.stringify(messageData));
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...messageData,
-          created_at: new Date().toISOString(),
-          id: Math.random(), // temporary id for UI
-        }
-      ]);
-      setNewMessage('');
+    } else {
+      // Fallback to HTTP API
+      console.warn('WebSocket not available, using HTTP fallback');
+      try {
+        const messData = {
+          content: trimmedMessage,
+          receiver_id: selectedConversation.displayUser?.id || selectedConversation.user2_id
+        };
+        
+        const response = await sendMessage(messData);
+        console.log('Message sent via HTTP:', response.data);
+        
+        // Add message to current chat immediately
+        setMessages(prev => [...prev, response.data]);
+        
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setNewMessage(trimmedMessage); // Restore message on error
+      }
     }
   };
 
@@ -210,58 +296,129 @@ export default function Messages() {
     return format(date, 'HH:mm');
   }
 
-  // WebSocket setup for real-time chat updates
+  // WebSocket setup for real-time chat updates with reconnect and exponential backoff
   useEffect(() => {
     if (!user?.id) return;
-    const ws = new WebSocket(`ws://127.0.0.1:8000/api/v1/chat/ws/${user.id}`);
-    wsRef.current = ws;
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        // Assume data has: { conversation_id, message, sender_id, ... }
-        setConversations((prev) => {
-          // Move updated conversation to top and update last message
-          let updated = prev.map((conv) => {
-            if (conv.id === data.conversation_id) {
-              // Update unread count
-              setUnreadCounts((counts) => ({
-                ...counts,
-                [conv.id]: (counts[conv.id] || 0) + 1
-              }));
-              return {
-                ...conv,
-                messages: conv.messages ? [...conv.messages, data] : [data],
-                lastMessage: data.content,
-                unread: true
-              };
+    let ws;
+    let reconnectAttempts = 0;
+    let reconnectTimeout = null;
+    let isUnmounted = false;
+
+    const connectWebSocket = () => {
+      ws = new WebSocket(`ws://127.0.0.1:8000/api/v1/chat/ws/${user.id}`);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        reconnectAttempts = 0;
+        // Optionally log or notify connection success
+        console.log('WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log("webhook message", data);
+          // Update conversations and move the latest to the top
+          setConversations((prev) => {
+            let updated = prev.map((conv) => {
+              if (conv.id === data.conversation_id) {
+                return {
+                  ...conv,
+                  messages: conv.messages ? [...conv.messages, data] : [data],
+                  lastMessage: data.message || data.content,
+                  unread: data.sender_id !== user.id
+                };
+              }
+              return conv;
+            });
+            // If conversation doesn't exist, create it
+            if (!updated.some((c) => c.id === data.conversation_id)) {
+              updated = [
+                {
+                  id: data.conversation_id,
+                  messages: [data],
+                  lastMessage: data.message || data.content,
+                  unread: data.sender_id !== user.id,
+                  user1_id: data.sender_id,
+                  user2_id: user.id,
+                },
+                ...updated
+              ];
             }
-            return conv;
+            // Move the updated/created conversation to the top
+            const idx = updated.findIndex(c => c.id === data.conversation_id);
+            if (idx > 0) {
+              const [convToTop] = updated.splice(idx, 1);
+              updated = [convToTop, ...updated];
+            }
+            return updated;
           });
-          // If conversation not found, add it
-          if (!updated.some((c) => c.id === data.conversation_id)) {
-            updated = [
-              {
-                id: data.conversation_id,
-                messages: [data],
-                lastMessage: data.content,
-                unread: true,
-                user1_id: data.sender_id,
-                user2_id: user.id,
-              },
-              ...updated
-            ];
+
+          // Update unread counts only for messages not from current user
+          if (data.sender_id !== user.id) {
+            setUnreadCounts((counts) => ({
+              ...counts,
+              [data.conversation_id]: (counts[data.conversation_id] || 0) + 1
+            }));
           }
-          return updated;
-        });
-      } catch (e) {
-        // Ignore parse errors
-      }
+
+          // Check if message is for currently open conversation using ref
+          const currentConversation = selectedConversationRef.current;
+          if (currentConversation && data.conversation_id === currentConversation.id) {
+            setMessages((prevMessages) => {
+              // Prevent duplicate messages
+              if (prevMessages.some(m => 
+                (m.id && data.id && m.id === data.id) || 
+                (m.created_at === data.created_at && m.sender_id === data.sender_id)
+              )) {
+                return prevMessages;
+              }
+              return [...prevMessages, data];
+            });
+          }
+          
+        } catch (e) {
+          console.error('WebSocket message parse error:', e);
+        }
+      };
+
+      ws.onclose = () => {
+        if (isUnmounted) return;
+        reconnectAttempts++;
+        const delay = Math.min(1000 * 2 ** reconnectAttempts, 30000); // max 30s
+        console.log(`WebSocket closed. Reconnecting in ${delay / 1000}s...`);
+        reconnectTimeout = setTimeout(connectWebSocket, delay);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        ws.close(); // Ensure onclose is called
+      };
     };
-    ws.onclose = () => {};
-    ws.onerror = () => {};
-    return () => ws.close();
-  }, [user?.id]);
+
+    connectWebSocket();
+
+    return () => {
+      isUnmounted = true;
+      if (ws) ws.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
+  }, [user?.id]); // Removed selectedConversation from dependencies, using ref instead
+
+  // Auto-scroll to bottom of messages when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // Populate interest message in input if present and this is a new conversation
+  useEffect(() => {
+    if (sellerId && defaultMessage && selectedConversation && !selectedConversation.id) {
+      setNewMessage(defaultMessage);
+    }
+  }, [sellerId, defaultMessage, selectedConversation]);
 
   if (loading) {
     return (
@@ -303,7 +460,7 @@ export default function Messages() {
                 </div>
               ) : (
                 filteredConversations.map((conv) => {
-                  const displayUser = conv.user1_id == user?.id ? conv.user2 : conv.user1;
+                  const displayUser = conv.user1_id === user?.id ? conv.user2 : conv.user1;
                   const displayName = getDisplayName({...conv, displayUser});
                   const isSelected = selectedConversation && 
                     ((selectedConversation.id && selectedConversation.id === conv.id) ||
@@ -369,10 +526,10 @@ export default function Messages() {
                   </div>
                   <div className={styles.chatHeaderInfo}>
                     <h3>{getDisplayName(selectedConversation)}</h3>
-                    <span className={styles.status}>
+                    {/* <span className={styles.status}>
                       <span className={`${styles.statusDot} ${styles[(selectedConversation.status?.toLowerCase() || 'active')]}`} />
                       {selectedConversation.status || 'Active'}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
                 
@@ -383,22 +540,32 @@ export default function Messages() {
                       const msgDate = msg.created_at.split('T')[0];
                       const showDivider = !lastDate || lastDate !== msgDate;
                       lastDate = msgDate;
+                      
                       return (
-                        <>
+                        <Fragment key={`msg-group-${msg.id || idx}`}>
                           {showDivider && (
-                            <div className={styles.dateDivider} key={`divider-${msgDate}`}>{getDateDivider(msg.created_at)}</div>
+                            <div className={styles.dateDivider} key={`divider-${msgDate}`}>
+                              {getDateDivider(msg.created_at)}
+                            </div>
                           )}
-                          <div key={msg.id} className={
-                            msg.sender_id === user?.id
-                              ? styles.messageItemSent
-                              : styles.messageItemReceived
-                          }>
-                            <div className={styles.messageContent}>{msg.content}</div>
+                          <div 
+                            key={`message-${msg.id || idx}`} 
+                            className={
+                              msg.sender_id === user?.id
+                                ? styles.messageItemSent
+                                : styles.messageItemReceived
+                            }
+                          >
+                            <div className={styles.messageContent}>
+                              {msg.message || msg.content}
+                            </div>
                             <div className={styles.messageMeta}>
-                              <span className={styles.messageTime}>{getTime(msg.created_at)}</span>
+                              <span className={styles.messageTime}>
+                                {getTime(msg.created_at)}
+                              </span>
                             </div>
                           </div>
-                        </>
+                        </Fragment>
                       );
                     });
                   })() : (
@@ -406,6 +573,7 @@ export default function Messages() {
                       <p>Start your conversation with {getDisplayName(selectedConversation)}</p>
                     </div>
                   )}
+                  <div ref={messagesEndRef} />
                 </div>
                 
                 <div className={styles.messageInput}>
