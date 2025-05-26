@@ -306,7 +306,9 @@ export default function Messages() {
     let isUnmounted = false;
 
     const connectWebSocket = () => {
-      ws = new WebSocket(`ws://127.0.0.1:8000/api/v1/chat/ws/${user.id}`);
+      // ws = new WebSocket(`ws://127.0.0.1:8000/api/v1/chat/ws/${user.id}`);
+      ws = new WebSocket(`wss://voltvillage-api.onrender.com/api/v1/chat/ws/${user.id}`);
+
       wsRef.current = ws;
 
       ws.onopen = () => {

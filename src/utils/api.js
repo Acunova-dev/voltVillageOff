@@ -2,7 +2,7 @@ import axios from 'axios';
 import rateLimiter from './rateLimiter';
 
 // export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
-export const API_BASE_URL = 'http://127.0.0.1:8000/api/v1';
+export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -171,6 +171,18 @@ export const getCurrentUser = async () => {
     return response;
   } catch (error) {
     throw error;
+  }
+};
+
+export const passwordReset = async (token, newPassword) => {
+  try {
+    const response = await client.post('/auth/reset-password', {
+      token,
+      new_password: newPassword
+    });
+    return response;
+  } catch (error) {
+    return error.response || error;
   }
 };
 
