@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   images: {
-    domains: ['example_arduno.com', 'rees52.com', 'example.com', 'voltvillage-api.onrender.com'],
+    domains: ['example_arduno.com', 'rees52.com', 'example.com', 'voltvillage-api.onrender.com', 'www.shutterstock.com'],
   },
   async rewrites() {
     return [

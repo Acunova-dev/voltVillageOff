@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
+import { getCurrentUser } from '@/utils/api';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  
   const logout = useCallback(() => {
     setAccessToken(null);
     setUser(null);
@@ -20,19 +20,15 @@ export function AuthProvider({ children }) {
   const fetchUserData = useCallback(async (token) => {
     if (!token) return false;
     console.log('Fetching user data with token:', token);
-    
+  
     try {
-      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/users/users/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
+      const response = await getCurrentUser()
+
+      if (response.status != 200) {
         throw new Error('Failed to fetch user data');
       }
 
-      const userData = await response.json();
+      const userData = await response.data;
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       return true;

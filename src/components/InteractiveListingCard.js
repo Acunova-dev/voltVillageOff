@@ -43,6 +43,7 @@ const InteractiveListingCard = ({ item }) => {
           height={200}
           className={styles.image}
           style={{ objectFit: 'cover' }}
+          unoptimized
         />
       </div>
       <div className={styles.content}>
