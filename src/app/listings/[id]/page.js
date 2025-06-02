@@ -20,6 +20,7 @@ const ListingDetail = ({ params }) => {
       try {
         const response = await items.getById(id);
         setListing(response.data);
+        console.log('Fetched listing:', response.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -37,17 +38,18 @@ const ListingDetail = ({ params }) => {
       addToCart(listing);
       router.push('/cart');
     }
-  };
-
-  const handleContact = async () => {
+  };  const handleContact = async () => {
     if (listing && listing.seller_id) {
-      // User info to send
+      // First add item to cart
+      addToCart(listing);
+
+      // Then prepare message data
       const userInfo = listing.seller;
-      // Pass user info as query params (encoded)
       const userInfoStr = encodeURIComponent(JSON.stringify(userInfo));
-      // Compose the message with the current page link
       const itemLink = window.location.href;
-      const message = `hallo, am interested in this item ${itemLink}`;
+      const price = Number(listing.price).toFixed(2);
+      const condition = listing.condition?.replace(/_/g, ' ') || 'Not specified';
+      const message = `Hi! I'm interested in the ${listing.title} you have listed for $${price}.\n\nItem Details:\n- Price: $${price}\n- Condition: ${condition}\n- Category: ${listing.category}\n- Location: ${listing.location}\n\nItem Link: ${itemLink}\n\nPlease let me know if it's still available.`;
       // Pass the message as a query param
       router.push(`/messages?seller=${listing.seller_id}&user=${userInfoStr}&message=${encodeURIComponent(message)}`);
     }

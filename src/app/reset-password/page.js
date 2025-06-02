@@ -1,10 +1,10 @@
 'use client'
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { passwordReset } from '@/utils/api';
 import styles from './page.module.css';
 
-export default function ForgotPassword() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
   const [password, setPassword] = useState('');
@@ -172,5 +172,19 @@ export default function ForgotPassword() {
         </form>
       </div>
     </div>
+  );
+}
+
+const LoadingFallback = () => (
+  <div className={styles.loadingContainer}>
+    <div className={styles.spinner}></div>
+  </div>
+);
+
+export default function ForgotPassword() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

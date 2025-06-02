@@ -68,15 +68,14 @@ export default function SignIn() {
     <div className={styles.container}>
       {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
-        <div className={styles.logoContainer}>          <Image
-            src="/vercel.svg"
-            alt="Logo"
-            width={40}
-            height={40}
-            style={{ height: '40px' }}
-            className={styles.logo}
-          />
-          <h2>voltVillage</h2>
+        <div className={styles.logoContainer}>          
+          <Image
+                        src="/logo official.png"
+                        alt="voltVillage Logo"
+                        width={250}
+                        height={60}
+                        priority
+                      />
         </div>
         <h1>Welcome back to</h1>
         <h2>voltVillage</h2>

@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState, useRef, Fragment } from 'react';
+import { useEffect, useState, useRef, Fragment, Suspense } from 'react';
 import styles from './page.module.css';
 import { FaSearch, FaCircle } from 'react-icons/fa';
 import { IoMdSend } from 'react-icons/io';
@@ -10,13 +10,19 @@ import { useAuth } from '../context/AuthContext';
 import { format, isToday, isYesterday, isThisWeek, parseISO } from 'date-fns';
 import { useRouter } from 'next/navigation';
 
-export default function Messages() {
+function MessagesContent() {
   const searchParams = useSearchParams();
   const sellerId = searchParams.get('seller');
   const userParam = searchParams.get('user');
   const defaultMessage = searchParams.get('message') || '';
   const { user, isLoading, isInitialized } = useAuth();
   const router = useRouter();
+  
+  // Add WebSocket state management
+  const [wsState, setWsState] = useState('disconnected'); // 'disconnected', 'connecting', 'connected'
+  const [offlineMessages, setOfflineMessages] = useState([]);
+  const heartbeatIntervalRef = useRef(null);
+  const lastPongRef = useRef(Date.now());
   
   let userInfo = null;
   // Remove broken JSON.parse for defaultMessage, just use the string
@@ -241,20 +247,34 @@ export default function Messages() {
       }
     }
 
-    // For existing conversations
     const messageData = {
       message: trimmedMessage,
       conversation_id: selectedConversation.id,
       sender_id: user?.id,
       receiver_id: selectedConversation.displayUser?.id || selectedConversation.user2_id,
+      created_at: new Date().toISOString()
     };
 
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      // Send via WebSocket
-      wsRef.current.send(JSON.stringify(messageData));
+    // Optimistically add message to UI
+    const optimisticMessage = {
+      ...messageData,
+      id: `temp-${Date.now()}`,
+      pending: true
+    };
+    
+    setMessages(prev => [...prev, optimisticMessage]);    if (wsRef.current && wsRef.current.readyState === WS_STATES.OPEN) {
+      try {
+        // Send via WebSocket
+        wsRef.current.send(JSON.stringify(messageData));
+      } catch (error) {
+        console.error('Error sending message via WebSocket:', error);
+        setOfflineMessages(prev => [...prev, messageData]);
+      }
     } else {
-      // Fallback to HTTP API
-      console.warn('WebSocket not available, using HTTP fallback');
+      // Queue message for when we're back online
+      setOfflineMessages(prev => [...prev, messageData]);
+      
+      // Also try HTTP fallback
       try {
         const messData = {
           content: trimmedMessage,
@@ -264,12 +284,18 @@ export default function Messages() {
         const response = await sendMessage(messData);
         console.log('Message sent via HTTP:', response.data);
         
-        // Add message to current chat immediately
+        // Remove the optimistic message and add the real one
+        setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
         setMessages(prev => [...prev, response.data]);
         
       } catch (error) {
         console.error('Error sending message:', error);
-        setNewMessage(trimmedMessage); // Restore message on error
+        // Keep the optimistic message but mark it as failed
+        setMessages(prev => prev.map(m => 
+          m.id === optimisticMessage.id 
+            ? { ...m, failed: true, pending: false }
+            : m
+        ));
       }
     }
   };
@@ -281,146 +307,228 @@ export default function Messages() {
     }
   };
 
-  // Helper to format date dividers
-  function getDateDivider(dateString) {
-    const date = parseISO(dateString);
-    if (isToday(date)) return 'Today';
-    if (isYesterday(date)) return 'Yesterday';
-    if (isThisWeek(date, { weekStartsOn: 1 })) return format(date, 'EEEE');
-    return format(date, 'dd MMM yyyy');
-  }
-
-  // Helper to format time only
-  function getTime(dateString) {
-    const date = parseISO(dateString);
-    return format(date, 'HH:mm');
-  }
-
-  // WebSocket setup for real-time chat updates with reconnect and exponential backoff
+  // WebSocket state constants
+  const WS_STATES = {
+    CONNECTING: 0,
+    OPEN: 1,
+    CLOSING: 2,
+    CLOSED: 3
+  };
+  
+  // WebSocket setup with reconnection, heartbeat, and error handling
   useEffect(() => {
-    if (!user?.id) return;
+    if (typeof window === 'undefined' || !user?.id) return;
 
     let ws;
     let reconnectAttempts = 0;
     let reconnectTimeout = null;
     let isUnmounted = false;
+    const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+    const PONG_TIMEOUT = 10000; // 10 seconds
+    
+    function isConnectionOpen(websocket) {
+      return websocket && websocket.readyState === WS_STATES.OPEN;
+    }
+
+    const startHeartbeat = () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
+
+      heartbeatIntervalRef.current = setInterval(() => {
+        if (isConnectionOpen(ws)) {
+          try {
+            ws.send(JSON.stringify({ type: 'ping' }));
+            
+            // Check if we received a pong within timeout
+            setTimeout(() => {
+              const timeSinceLastPong = Date.now() - lastPongRef.current;
+              if (timeSinceLastPong > PONG_TIMEOUT) {
+                console.warn('No pong received, reconnecting...');
+                ws.close();
+              }
+            }, PONG_TIMEOUT);
+          } catch (error) {
+            console.error('Error sending heartbeat:', error);
+            ws.close();
+          }
+        }
+      }, HEARTBEAT_INTERVAL);
+    };
 
     const connectWebSocket = () => {
-      // ws = new WebSocket(`ws://127.0.0.1:8000/api/v1/chat/ws/${user.id}`);
-      ws = new WebSocket(`wss://voltvillage-api.onrender.com/api/v1/chat/ws/${user.id}`);
+      try {
+        setWsState('connecting');
+        ws = new WebSocket(`wss://voltvillage-api.onrender.com/api/v1/chat/ws/${user.id}`);
+        wsRef.current = ws;
 
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        reconnectAttempts = 0;
-        // Optionally log or notify connection success
-        console.log('WebSocket connected');
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log("webhook message", data);
-          // Update conversations and move the latest to the top
-          setConversations((prev) => {
-            let updated = prev.map((conv) => {
-              if (conv.id === data.conversation_id) {
-                return {
-                  ...conv,
-                  messages: conv.messages ? [...conv.messages, data] : [data],
-                  lastMessage: data.message || data.content,
-                  unread: data.sender_id !== user.id
-                };
-              }
-              return conv;
-            });
-            // If conversation doesn't exist, create it
-            if (!updated.some((c) => c.id === data.conversation_id)) {
-              updated = [
-                {
-                  id: data.conversation_id,
-                  messages: [data],
-                  lastMessage: data.message || data.content,
-                  unread: data.sender_id !== user.id,
-                  user1_id: data.sender_id,
-                  user2_id: user.id,
-                },
-                ...updated
-              ];
-            }
-            // Move the updated/created conversation to the top
-            const idx = updated.findIndex(c => c.id === data.conversation_id);
-            if (idx > 0) {
-              const [convToTop] = updated.splice(idx, 1);
-              updated = [convToTop, ...updated];
-            }
-            return updated;
-          });
-
-          // Update unread counts only for messages not from current user
-          if (data.sender_id !== user.id) {
-            setUnreadCounts((counts) => ({
-              ...counts,
-              [data.conversation_id]: (counts[data.conversation_id] || 0) + 1
-            }));
-          }
-
-          // Check if message is for currently open conversation using ref
-          const currentConversation = selectedConversationRef.current;
-          if (currentConversation && data.conversation_id === currentConversation.id) {
-            setMessages((prevMessages) => {
-              // Prevent duplicate messages
-              if (prevMessages.some(m => 
-                (m.id && data.id && m.id === data.id) || 
-                (m.created_at === data.created_at && m.sender_id === data.sender_id)
-              )) {
-                return prevMessages;
-              }
-              return [...prevMessages, data];
-            });
-          }
+        ws.onopen = () => {
+          console.log('WebSocket connected');
+          setWsState('connected');
+          reconnectAttempts = 0;
+          startHeartbeat();
           
-        } catch (e) {
-          console.error('WebSocket message parse error:', e);
+          // Send any queued offline messages
+          if (offlineMessages.length > 0) {
+            offlineMessages.forEach(msg => {
+              ws.send(JSON.stringify(msg));
+            });
+            setOfflineMessages([]);
+          }
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            
+            // Handle pong messages
+            if (data.type === 'pong') {
+              lastPongRef.current = Date.now();
+              return;
+            }
+
+            console.log("Received message:", data);
+            
+            // Handle normal messages
+            setConversations((prev) => {
+              let updated = prev.map((conv) => {
+                if (conv.id === data.conversation_id) {
+                  return {
+                    ...conv,
+                    messages: conv.messages ? [...conv.messages, data] : [data],
+                    lastMessage: data.message || data.content,
+                    unread: data.sender_id !== user.id
+                  };
+                }
+                return conv;
+              });
+
+              if (!updated.some((c) => c.id === data.conversation_id)) {
+                updated = [
+                  {
+                    id: data.conversation_id,
+                    messages: [data],
+                    lastMessage: data.message || data.content,
+                    unread: data.sender_id !== user.id,
+                    user1_id: data.sender_id,
+                    user2_id: user.id,
+                  },
+                  ...updated
+                ];
+              }
+
+              const idx = updated.findIndex(c => c.id === data.conversation_id);
+              if (idx > 0) {
+                const [convToTop] = updated.splice(idx, 1);
+                updated = [convToTop, ...updated];
+              }
+              return updated;
+            });
+
+            if (data.sender_id !== user.id) {
+              setUnreadCounts((counts) => ({
+                ...counts,
+                [data.conversation_id]: (counts[data.conversation_id] || 0) + 1
+              }));
+            }
+
+            const currentConversation = selectedConversationRef.current;
+            if (currentConversation && data.conversation_id === currentConversation.id) {
+              setMessages((prevMessages) => {
+                if (prevMessages.some(m => 
+                  (m.id && data.id && m.id === data.id) || 
+                  (m.created_at === data.created_at && m.sender_id === data.sender_id)
+                )) {
+                  return prevMessages;
+                }
+                return [...prevMessages, data];
+              });
+            }
+          } catch (e) {
+            console.error('WebSocket message parse error:', e);
+          }
+        };
+
+        ws.onclose = (event) => {
+          if (isUnmounted) return;
+          
+          console.log(`WebSocket closed with code ${event.code}`);
+          setWsState('disconnected');
+          
+          if (heartbeatIntervalRef.current) {
+            clearInterval(heartbeatIntervalRef.current);
+          }
+
+          reconnectAttempts++;
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          console.log(`Reconnecting in ${delay/1000}s...`);
+          reconnectTimeout = setTimeout(connectWebSocket, delay);
+        };
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          // The onclose handler will be called after this
+        };
+      } catch (error) {
+        console.error('Error creating WebSocket:', error);
+        setWsState('disconnected');
+        
+        if (!isUnmounted) {
+          reconnectAttempts++;
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+          reconnectTimeout = setTimeout(connectWebSocket, delay);
         }
-      };
-
-      ws.onclose = () => {
-        if (isUnmounted) return;
-        reconnectAttempts++;
-        const delay = Math.min(1000 * 2 ** reconnectAttempts, 30000); // max 30s
-        console.log(`WebSocket closed. Reconnecting in ${delay / 1000}s...`);
-        reconnectTimeout = setTimeout(connectWebSocket, delay);
-      };
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        ws.close(); // Ensure onclose is called
-      };
+      }
     };
 
     connectWebSocket();
 
     return () => {
       isUnmounted = true;
-      if (ws) ws.close();
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      if (ws) {
+        ws.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
     };
-  }, [user?.id]); // Removed selectedConversation from dependencies, using ref instead
-
-  // Auto-scroll to bottom of messages when messages change
+  }, [user?.id, offlineMessages]);
+  // Populate interest message in input if present
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (defaultMessage && selectedConversation) {
+      // Set the default message when:
+      // 1. It's a new conversation (no id), or
+      // 2. We're coming from an item page (has sellerId)
+      if (!selectedConversation.id || sellerId) {
+        setNewMessage(decodeURIComponent(defaultMessage));
+      }
     }
-  }, [messages]);
+  }, [defaultMessage, selectedConversation, sellerId]);
 
-  // Populate interest message in input if present and this is a new conversation
-  useEffect(() => {
-    if (sellerId && defaultMessage && selectedConversation && !selectedConversation.id) {
-      setNewMessage(defaultMessage);
+  // Helper function to format dates for message groups
+  const getDateDivider = (dateString) => {
+    const date = parseISO(dateString);
+    if (isToday(date)) {
+      return 'Today';
     }
-  }, [sellerId, defaultMessage, selectedConversation]);
+    if (isYesterday(date)) {
+      return 'Yesterday';
+    }
+    if (isThisWeek(date)) {
+      return format(date, 'EEEE'); // Day name like "Monday"
+    }
+    return format(date, 'MMMM d, yyyy'); // Full date like "June 1, 2025"
+  };
+
+  // Helper to get time for messages
+  const getTime = (dateString) => {
+    if (!dateString) return '';
+    const date = parseISO(dateString);
+    return format(date, 'h:mm a'); // Format like "2:30 PM"
+  };
 
   if (loading) {
     return (
@@ -528,10 +636,9 @@ export default function Messages() {
                   </div>
                   <div className={styles.chatHeaderInfo}>
                     <h3>{getDisplayName(selectedConversation)}</h3>
-                    {/* <span className={styles.status}>
-                      <span className={`${styles.statusDot} ${styles[(selectedConversation.status?.toLowerCase() || 'active')]}`} />
-                      {selectedConversation.status || 'Active'}
-                    </span> */}
+                    <span className={`${styles.connectionStatus} ${styles[wsState]}`}>
+                      {wsState === 'connected' ? 'Online' : wsState === 'connecting' ? 'Connecting...' : 'Offline'}
+                    </span>
                   </div>
                 </div>
                 
@@ -609,5 +716,20 @@ export default function Messages() {
         </div>
       </main>
     </div>
+  );
+}
+
+const LoadingFallback = () => (
+  <div className={styles.loadingContainer}>
+    <div className={styles.spinner}></div>
+    <p>Loading messages...</p>
+  </div>
+);
+
+export default function Messages() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <MessagesContent />
+    </Suspense>
   );
 }
