@@ -1,8 +1,57 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Cloudinary } from '@cloudinary/url-gen';
+import { auto } from '@cloudinary/url-gen/actions/resize';
+import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
 import styles from './CreateListingModal.module.css';
+import CloudinaryUploadWidget from './CloudinaryUploadWidget';
 
 const CreateListingModal = ({ onClose, onSubmit }) => {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = 'voltvillage'; // You can create a custom upload preset in your Cloudinary console
+
+  const cld = new Cloudinary({
+    cloud: {
+      cloudName
+    }
+  });
+
+  // Widget configuration
+  const uwConfig = {
+    cloudName,
+    uploadPreset,
+    cropping: true,
+    multiple: true,
+    maxFiles: 5,
+    clientAllowedFormats: ['image'],
+    maxImageFileSize: 5000000, // 5MB
+    showAdvancedOptions: false,
+    sources: ['local', 'url', 'camera'],
+    defaultSource: 'local',
+    // Disable error tracking to prevent ad blocker issues
+    errorTracking: false,
+    styles: {
+      palette: {
+        window: "#ffffff",
+        sourceBg: "#f4f4f5",
+        windowBorder: "#90a0b3",
+        tabIcon: "#4f46e5",
+        inactiveTabIcon: "#6b7280",
+        menuIcons: "#6b7280",
+        link: "#4f46e5",
+        action: "#4f46e5",
+        inProgress: "#4f46e5",
+        complete: "#22c55e",
+        error: "#ef4444",
+        textDark: "#1f2937",
+        textLight: "#ffffff"
+      }
+    }
+  };
+
+  // Initial form data state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -16,6 +65,8 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,25 +75,85 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
       [name]: value
     }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    // Validate required fields
+    if (formData.photo_urls.length === 0) {
+      setError('Please upload at least one photo');
+      setLoading(false);
+      return;
+    }
+
+    // Validate other required fields
+    const requiredFields = ['title', 'description', 'price', 'category', 'condition', 'location'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    if (missingFields.length > 0) {
+      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      setLoading(false);
+      return;
+    }
+
     try {
-      await onSubmit({
-        ...formData,
+      // Format the data according to API expectations
+      const submissionData = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        listing_status: 'active'
-      });
+        category: formData.category,
+        condition: formData.condition,
+        location: formData.location.trim(),
+        listing_status: 'active',
+        // Format photo_urls as an array of strings (URLs)
+        photo_urls: formData.photo_urls.map(photo => photo.photo_url)
+      };
+
+      // Log the data being sent for debugging
+      console.log('Submitting listing data:', submissionData);
+
+      await onSubmit(submissionData);
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to create listing');
+      console.error('Submission error:', err);
+      const errorMessage = err.response?.data?.detail || err.message || 'Failed to create listing';
+      setError(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
     } finally {
       setLoading(false);
     }
+  };
+  const handleUploadSuccess = (result) => {
+    // Create optimized version using Cloudinary URL Gen SDK
+    const optimizedImage = cld
+      .image(result.public_id)
+      .format('auto')
+      .quality('auto')
+      .resize(auto().gravity(autoGravity()).width(500).height(500));
+
+    const newImage = {
+      photo_url: result.secure_url,
+      public_id: result.public_id,
+      optimized_url: optimizedImage.toURL()
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      photo_urls: [...prev.photo_urls, newImage]
+    }));
+  };
+
+  const handleUploadError = (error) => {
+    console.error('Upload error:', error);
+    setError('Failed to upload image. Please try again.');
+  };
+
+  const removeImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      photo_urls: prev.photo_urls.filter((_, i) => i !== index)
+    }));
   };
 
   return (
@@ -51,16 +162,16 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
         <button className={styles.closeButton} onClick={onClose}>
           <i className="fas fa-times"></i>
         </button>
-        
+
         <h2>Create New Listing</h2>
-        
+
         {error && (
           <div className={styles.error}>
             <i className="fas fa-exclamation-circle"></i>
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
             <label htmlFor="title">Title *</label>
@@ -175,6 +286,34 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
                 <option value="poor">Poor</option>
                 <option value="unknown">Unknown</option>
               </select>
+            </div>
+          </div>          <div className={styles.formGroup}>
+            <label>Photos *</label>
+            <div className={styles.uploadContainer}>
+              <CloudinaryUploadWidget 
+                uwConfig={uwConfig}
+                onUploadSuccess={handleUploadSuccess}
+                onUploadError={handleUploadError}
+              />
+              {formData.photo_urls.length > 0 && (
+                <div className={styles.previewImages}>
+                  {formData.photo_urls.map((photo, index) => (
+                    <div key={photo.public_id} className={styles.previewImage}>
+                      <AdvancedImage
+                        cldImg={cld.image(photo.public_id)}
+                        plugins={[responsive(), placeholder()]}
+                      />
+                      <button
+                        type="button"
+                        className={styles.removeImage}
+                        onClick={() => removeImage(index)}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
