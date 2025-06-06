@@ -174,7 +174,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            <label htmlFor="title">Title *</label>
+            <label htmlFor="title">Title </label>
             <input
               type="text"
               id="title"
@@ -187,7 +187,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="description">Description *</label>
+            <label htmlFor="description">Description </label>
             <textarea
               id="description"
               name="description"
@@ -199,7 +199,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="location">Location *</label>
+            <label htmlFor="location">Location </label>
             <input
               type="text"
               id="location"
@@ -213,7 +213,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label htmlFor="price">Price (R) *</label>
+              <label htmlFor="price">Price (R) </label>
               <input
                 type="number"
                 id="price"
@@ -227,7 +227,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="stock">Stock *</label>
+              <label htmlFor="stock">Stock </label>
               <input
                 type="number"
                 id="stock"
@@ -242,7 +242,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label htmlFor="category">Category *</label>
+              <label htmlFor="category">Category </label>
               <select
                 id="category"
                 name="category"
@@ -270,7 +270,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="condition">Condition *</label>
+              <label htmlFor="condition">Condition </label>
               <select
                 id="condition"
                 name="condition"
@@ -288,7 +288,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
               </select>
             </div>
           </div>          <div className={styles.formGroup}>
-            <label>Photos *</label>
+            <label>Photos </label>
             <div className={styles.uploadContainer}>
               <CloudinaryUploadWidget 
                 uwConfig={uwConfig}
