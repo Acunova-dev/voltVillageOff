@@ -1,11 +1,13 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import styles from './InteractiveListingCard.module.css';
+import { getCartItems } from '@/utils/cartStorage';
 
 const InteractiveListingCard = ({ item }) => {
   const router = useRouter();
+  const [isInCart, setIsInCart] = useState(false);
 
   const defaultItem = {
     title: 'Arduino Uno',
@@ -24,6 +26,10 @@ const InteractiveListingCard = ({ item }) => {
 
   const displayItem = item || defaultItem;
   const imageUrl = displayItem.photo_urls?.[0]?.photo_url || '/placeholder.jpg';
+  useEffect(() => {
+    const cartItems = getCartItems();
+    setIsInCart(cartItems.some(cartItem => cartItem.id === displayItem.id));
+  }, [displayItem.id]);
 
   const handleCardClick = () => {
     // Navigate to product detail page
@@ -36,6 +42,11 @@ const InteractiveListingCard = ({ item }) => {
       onClick={handleCardClick}
     >
       <div className={styles.imageContainer}>
+        {isInCart && (
+          <div className={styles.pinIndicator}>
+            <i className="fas fa-shopping-cart"></i>
+          </div>
+        )}
         <Image
           src={imageUrl}
           alt={displayItem.title}
