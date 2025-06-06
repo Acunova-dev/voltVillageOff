@@ -1,6 +1,7 @@
 import axios from 'axios';
 import rateLimiter from './rateLimiter';
 
+// export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
 export const API_BASE_URL = 'https://voltvillage-api.onrender.com/api/v1';
 
 const client = axios.create({
@@ -102,6 +103,7 @@ export const forgotPassword = async (email) => {
   }
 };
 
+
 export const items = {
   getAll: async (params) => {
     try {
@@ -128,6 +130,60 @@ export const requests = {
   getMyRequests: () => client.get('/requests/my-requests/'),
   makeOffer: (requestId, data) => client.post(`/requests/${requestId}/offers`, data),
   getOffers: (requestId) => client.get(`/requests/${requestId}/offers`),
+};
+
+export const getConversations = async (skip = 0, limit = 100) => {
+  try {
+    const response = await client.get(`/chat/conversations/`, {
+      params: { skip, limit },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getMessages = async (conversationId, skip = 0, limit = 100) => {
+  try {
+    const response = await client.get(`/chat/messages/${conversationId}`, {
+      params: { skip, limit },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sendMessage = async (message) => {
+  try {
+    // Do NOT JSON.stringify here, just send the plain object
+    const response = await client.post(`/chat/messages`, message);
+    console.log('API sendMessage response:', response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getCurrentUser = async () => {
+  try {
+    const response = await client.get('/users/users/me');
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const passwordReset = async (token, newPassword) => {
+  try {
+    const response = await client.post('/auth/reset-password', {
+      token,
+      new_password: newPassword
+    });
+    return response;
+  } catch (error) {
+    return error.response || error;
+  }
 };
 
 export default client;

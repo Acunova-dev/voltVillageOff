@@ -5,26 +5,22 @@ import { useRouter } from 'next/navigation';
 import styles from './ListingDetail.module.css';
 import NavigationDrawer from '../../../components/NavigationDrawer';
 import { addToCart } from '../../../utils/cartStorage';
+import { items } from '../../../utils/api';
 
 const ListingDetail = ({ params }) => {
+  const { id } = React.use(params);
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const router = useRouter();
-  const { id } = params;
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const response = await fetch(`/api/v1/items/${id}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch listing');
-        }
-        
-        const data = await response.json();
-        setListing(data);
+        const response = await items.getById(id);
+        setListing(response.data);
+        console.log('Fetched listing:', response.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -42,11 +38,20 @@ const ListingDetail = ({ params }) => {
       addToCart(listing);
       router.push('/cart');
     }
-  };
-
-  const handleContact = () => {
+  };  const handleContact = async () => {
     if (listing && listing.seller_id) {
-      router.push(`/messages?seller=${listing.seller_id}`);
+      // First add item to cart
+      addToCart(listing);
+
+      // Then prepare message data
+      const userInfo = listing.seller;
+      const userInfoStr = encodeURIComponent(JSON.stringify(userInfo));
+      const itemLink = window.location.href;
+      const price = Number(listing.price).toFixed(2);
+      const condition = listing.condition?.replace(/_/g, ' ') || 'Not specified';
+      const message = `Hi! I'm interested in the ${listing.title} you have listed for $${price}.\n\nItem Details:\n- Price: $${price}\n- Condition: ${condition}\n- Category: ${listing.category}\n- Location: ${listing.location}\n\nItem Link: ${itemLink}\n\nPlease let me know if it's still available.`;
+      // Pass the message as a query param
+      router.push(`/messages?seller=${listing.seller_id}&user=${userInfoStr}&message=${encodeURIComponent(message)}`);
     }
   };
 
@@ -129,7 +134,7 @@ const ListingDetail = ({ params }) => {
                   width={600}
                   height={600}
                   className={styles.mainImage}
-                  priority
+                  unoptimized
                 />
               </div>
               
@@ -206,7 +211,7 @@ const ListingDetail = ({ params }) => {
                 )}
                 <button 
                   className={styles.contactButton}
-                  onClick={handleAddToCart}
+                  onClick={handleContact}
                 >
                   <i className="fas fa-shopping-cart"></i> I'm Interested
                 </button>
