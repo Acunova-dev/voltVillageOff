@@ -643,9 +643,9 @@ function MessagesContent() {
                   </div>
                   <div className={styles.chatHeaderInfo}>
                     <h3>{getDisplayName(selectedConversation)}</h3>
-                    <span className={`${styles.connectionStatus} ${styles[wsState]}`}>
+                    {/* <span className={`${styles.connectionStatus} ${styles[wsState]}`}>
                       {wsState === 'connected' ? 'Online' : wsState === 'connecting' ? 'Connecting...' : 'Offline'}
-                    </span>
+                    </span> */}
                   </div>
                 </div>
                 
