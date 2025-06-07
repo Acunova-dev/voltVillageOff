@@ -1,7 +1,7 @@
 import { Cloudinary } from '@cloudinary/url-gen';
 import axios from 'axios';
 
-const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const cloudName = 'ds3vwdjhc';
 const uploadPreset = 'voltvillage'; // Your upload preset name
 
 if (!cloudName) {
