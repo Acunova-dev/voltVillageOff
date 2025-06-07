@@ -1,82 +1,60 @@
 "use client"
-import { useEffect, useRef, useState } from 'react';
-import Script from 'next/script';
+import { useRef, useState } from 'react';
+import { uploadToCloudinary } from '@/utils/cloudinary';
+import styles from './CreateListingModal.module.css';
 
-const CloudinaryUploadWidget = ({ uwConfig, onUploadSuccess, onUploadError }) => {
-  const cloudinaryRef = useRef();
-  const widgetRef = useRef();
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [scriptError, setScriptError] = useState(false);
+const CloudinaryUploadWidget = ({ onUploadSuccess, onUploadError }) => {
+  const fileInputRef = useRef();
+  const [isUploading, setIsUploading] = useState(false);
+  const handleFileChange = async (event) => {
+    const files = event.target.files;
+    if (!files.length) return;
 
-  useEffect(() => {
-    // Only initialize if the script has loaded successfully
-    if (scriptLoaded && typeof window !== 'undefined' && window.cloudinary) {
-      cloudinaryRef.current = window.cloudinary;
-      
-      // Create widget instance
-      widgetRef.current = cloudinaryRef.current.createUploadWidget(
-        {
-          ...uwConfig,
-          styles: {
-            palette: {
-              window: "#FFFFFF",
-              windowBorder: "#90A0B3",
-              tabIcon: "#4f46e5",
-              menuIcons: "#5A616A",
-              textDark: "#000000",
-              textLight: "#FFFFFF",
-              link: "#4f46e5",
-              action: "#FF620C",
-              inactiveTabIcon: "#0E2F5A",
-              error: "#F44235",
-              inProgress: "#4f46e5",
-              complete: "#20B832",
-              sourceBg: "#E4EBF1"
-            }
-          }
-        },
-        (error, result) => {
-          if (error) {
-            onUploadError?.(error);
-            return;
-          }
-
-          if (result.event === 'success') {
-            onUploadSuccess?.(result.info);
-          }
-        }
-      );
-    }
-  }, [uwConfig, onUploadSuccess, onUploadError]);
-
-  const openWidget = () => {
-    if (widgetRef.current) {
-      widgetRef.current.open();
+    setIsUploading(true);
+    try {
+      for (const file of files) {
+        const result = await uploadToCloudinary(file);
+        onUploadSuccess?.({
+          public_id: result.public_id,
+          secure_url: result.secure_url
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      onUploadError?.(error);
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
   return (
-    <>
-      <Script
-        src="https://upload-widget.cloudinary.com/global/all.js"
-        onLoad={() => setScriptLoaded(true)}
-        onError={() => setScriptError(true)}
-        strategy="lazyOnload"
+    <div className={styles.uploadWidgetContainer}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
       />
-      {scriptError ? (
-        <div style={{ color: 'red', marginBottom: '1rem' }}>
-          Failed to load upload widget. Please disable ad blockers and try again.
+      <button 
+        type="button" 
+        className={styles.uploadButton}
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+      >
+        <i className="fas fa-cloud-upload-alt"></i>
+        <span>{isUploading ? 'Uploading...' : 'Upload Photos'}</span>
+      </button>
+      {isUploading && (
+        <div className={styles.uploadProgress}>
+          <div className={styles.progressBar} style={{ width: '100%', animation: 'progressAnimation 1s infinite' }} />
         </div>
-      ) : (
-        <button 
-          type="button" 
-          className="upload-widget-button"
-          onClick={openWidget}
-          disabled={!scriptLoaded}
-        >
-          {scriptLoaded ? 'Upload Photos' : 'Loading...'}
-        </button>
       )}
-    </>
+    </div>
   );
 };
 
