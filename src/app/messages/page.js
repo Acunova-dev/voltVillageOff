@@ -186,6 +186,13 @@ function MessagesContent() {
     (conv.lastMessage?.toLowerCase() || '').includes(searchQuery.toLowerCase())
   );
 
+    // Auto-scroll to bottom of messages when messages change
+    useEffect(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, [messages]);
+
   // Handle conversation selection
   const handleConversationSelect = (conv) => {
     console.log("clicked conv", conv);
