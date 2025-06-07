@@ -1,57 +1,11 @@
 "use client"
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { Cloudinary } from '@cloudinary/url-gen';
-import { auto } from '@cloudinary/url-gen/actions/resize';
-import { autoGravity } from '@cloudinary/url-gen/qualifiers/gravity';
+import React, { useState } from 'react';
 import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
 import styles from './CreateListingModal.module.css';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
+import { cld, getOptimizedImageUrl } from '@/utils/cloudinary';
 
 const CreateListingModal = ({ onClose, onSubmit }) => {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = 'voltvillage'; // You can create a custom upload preset in your Cloudinary console
-
-  const cld = new Cloudinary({
-    cloud: {
-      cloudName
-    }
-  });
-
-  // Widget configuration
-  const uwConfig = {
-    cloudName,
-    uploadPreset,
-    cropping: true,
-    multiple: true,
-    maxFiles: 5,
-    clientAllowedFormats: ['image'],
-    maxImageFileSize: 5000000, // 5MB
-    showAdvancedOptions: false,
-    sources: ['local', 'url', 'camera'],
-    defaultSource: 'local',
-    // Disable error tracking to prevent ad blocker issues
-    errorTracking: false,
-    styles: {
-      palette: {
-        window: "#ffffff",
-        sourceBg: "#f4f4f5",
-        windowBorder: "#90a0b3",
-        tabIcon: "#4f46e5",
-        inactiveTabIcon: "#6b7280",
-        menuIcons: "#6b7280",
-        link: "#4f46e5",
-        action: "#4f46e5",
-        inProgress: "#4f46e5",
-        complete: "#22c55e",
-        error: "#ef4444",
-        textDark: "#1f2937",
-        textLight: "#ffffff"
-      }
-    }
-  };
-
-  // Initial form data state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -123,19 +77,11 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
     } finally {
       setLoading(false);
     }
-  };
-  const handleUploadSuccess = (result) => {
-    // Create optimized version using Cloudinary URL Gen SDK
-    const optimizedImage = cld
-      .image(result.public_id)
-      .format('auto')
-      .quality('auto')
-      .resize(auto().gravity(autoGravity()).width(500).height(500));
-
+  };  const handleUploadSuccess = (result) => {
     const newImage = {
       photo_url: result.secure_url,
       public_id: result.public_id,
-      optimized_url: optimizedImage.toURL()
+      optimized_url: getOptimizedImageUrl(result.public_id)
     };
 
     setFormData(prev => ({
@@ -288,10 +234,8 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
               </select>
             </div>
           </div>          <div className={styles.formGroup}>
-            <label>Photos </label>
-            <div className={styles.uploadContainer}>
+            <label>Photos </label>          <div className={styles.uploadContainer}>
               <CloudinaryUploadWidget 
-                uwConfig={uwConfig}
                 onUploadSuccess={handleUploadSuccess}
                 onUploadError={handleUploadError}
               />
