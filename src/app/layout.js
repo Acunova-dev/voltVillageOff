@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from './context/AuthContext';
 import TopLoadingBar from "@/components/TopLoadingBar";
-import Footer from "@/components/Footer";
+import FooterWrapper from "@/components/FooterWrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,10 +19,23 @@ export const metadata = {
   description: "Your trusted marketplace for university engineering components",
 };
 
-export default function RootLayout({ children }) {  return (
-    <html lang="en"><head><link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    /><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /></head><body className={`${geistSans.variable} ${geistMono.variable} flex-layout`}><AuthProvider><TopLoadingBar /><div className="main-content">{children}</div><Footer /></AuthProvider></body></html>
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} flex-layout`}>
+        <AuthProvider>
+          <TopLoadingBar />
+          <div className="main-content">{children}</div>
+          <FooterWrapper />
+        </AuthProvider>
+      </body>
+    </html>
   );
 }
