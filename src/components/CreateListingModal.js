@@ -130,7 +130,8 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
               required
               placeholder="e.g., Arduino Uno R3"
             />
-          </div>          <div className={`${styles.formGroup} ${styles.optional}`}>
+          </div>          
+          <div className={`${styles.formGroup} ${styles.optional}`}>
             <label htmlFor="description">Description </label>
             <textarea
               id="description"
