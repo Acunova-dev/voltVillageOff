@@ -14,9 +14,11 @@
 .header {
   margin-bottom: clamp(1.5rem, 3vw, 2rem);
   display: flex;
+
   flex-wrap: wrap;
   gap: 1rem;
-  align-items: center;
+  align-items: space-between;
+  justify-content: space-between;
 }
 
 .header h1 {

@@ -10,7 +10,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
     title: '',
     description: '',
     price: '',
-    stock: 1,
+    quantity: 1,
     category: '',
     condition: '',
     location: '',
@@ -29,6 +29,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
       [name]: value
     }));
   };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,8 +42,8 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
       return;
     }
 
-    // Validate other required fields
-    const requiredFields = ['title', 'description', 'price', 'category', 'condition', 'location'];
+    // Validate other required fields (description is optional)
+    const requiredFields = ['title', 'price', 'category', 'condition', 'location'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     if (missingFields.length > 0) {
       setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
@@ -56,12 +57,11 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
         title: formData.title.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        quantity: parseInt(formData.quantity),
         category: formData.category,
         condition: formData.condition,
         location: formData.location.trim(),
         listing_status: 'active',
-        // Format photo_urls as an array of strings (URLs)
         photo_urls: formData.photo_urls.map(photo => photo.photo_url)
       };
 
@@ -77,7 +77,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
     } finally {
       setLoading(false);
     }
-  };  const handleUploadSuccess = (result) => {
+  }; const handleUploadSuccess = (result) => {
     const newImage = {
       photo_url: result.secure_url,
       public_id: result.public_id,
@@ -105,9 +105,11 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={onClose}>
-          <i className="fas fa-times"></i>
-        </button>
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+          <button className={styles.closeButton} onClick={onClose}>
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
 
         <h2>Create New Listing</h2>
 
@@ -130,16 +132,14 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
               required
               placeholder="e.g., Arduino Uno R3"
             />
-          </div>
-
-          <div className={styles.formGroup}>
+          </div>          
+          <div className={`${styles.formGroup} ${styles.optional}`}>
             <label htmlFor="description">Description </label>
             <textarea
               id="description"
               name="description"
               value={formData.description}
               onChange={handleChange}
-              required
               placeholder="Describe your item's features and condition"
             />
           </div>
@@ -159,7 +159,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
 
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label htmlFor="price">Price (R) </label>
+              <label htmlFor="price">Price (USD)</label>
               <input
                 type="number"
                 id="price"
@@ -173,12 +173,12 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="stock">Stock </label>
+              <label htmlFor="quantity">Quantity </label>
               <input
                 type="number"
-                id="stock"
-                name="stock"
-                value={formData.stock}
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
                 onChange={handleChange}
                 required
                 min="1"
@@ -235,7 +235,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
             </div>
           </div>          <div className={styles.formGroup}>
             <label>Photos </label>          <div className={styles.uploadContainer}>
-              <CloudinaryUploadWidget 
+              <CloudinaryUploadWidget
                 onUploadSuccess={handleUploadSuccess}
                 onUploadError={handleUploadError}
               />
@@ -259,14 +259,23 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
                 </div>
               )}
             </div>
-          </div>
-
-          <div className={styles.actions}>
+          </div>          <div className={styles.actions}>
             <button type="button" onClick={onClose} className={styles.cancelButton}>
+              <i className="fas fa-times"></i>
               Cancel
             </button>
             <button type="submit" className={styles.submitButton} disabled={loading}>
-              {loading ? 'Creating...' : 'Create Listing'}
+              {loading ? (
+                <>
+                  <i className="fas fa-circle-notch fa-spin"></i>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-plus"></i>
+                  Create Listing
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -69,16 +69,16 @@ export default function ManageListings() {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleStockUpdate = async (id, newStock) => {
+  const handleQuantityUpdate = async (id, newQuantity) => {
     try {
-      await items.update(id, { stock: newStock });
+      await items.update(id, { quantity: newQuantity });
       setUserListings(listings => 
         listings.map(item => 
-          item.id === id ? { ...item, stock: newStock } : item
+          item.id === id ? { ...item, quantity: newQuantity } : item
         )
       );
     } catch (err) {
-      console.error('Error updating stock:', err);
+      console.error('Error updating quantity:', err);
       setUserListings(prev => [...prev]);
     }
   };
@@ -198,7 +198,7 @@ export default function ManageListings() {
               <div className={styles.tableHeader}>
                 <div className={styles.tableCell}>Item</div>
                 <div className={styles.tableCell}>Price</div>
-                <div className={styles.tableCell}>Stock</div>
+                <div className={styles.tableCell}>Quantity</div>
                 <div className={styles.tableCell}>Status</div>
                 <div className={styles.tableCell}>Actions</div>
               </div>
@@ -224,10 +224,10 @@ export default function ManageListings() {
                   <div className={styles.tableCell}>
                     <input 
                       type="number" 
-                      value={listing.stock || 0} 
-                      className={styles.stockInput}
+                      value={listing.quantity || 0} 
+                      className={styles.quantityInput}
                       min="0"
-                      onChange={(e) => handleStockUpdate(listing.id, parseInt(e.target.value, 10))}
+                      onChange={(e) => handleQuantityUpdate(listing.id, parseInt(e.target.value, 10))}
                     />
                   </div>
                   <div className={styles.tableCell}>

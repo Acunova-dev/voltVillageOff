@@ -140,6 +140,7 @@
 
 .tableCell {
   padding: 0 8px;
+  color: #333;
 }
 
 .itemInfo {
@@ -172,12 +173,12 @@
   overflow: hidden;
 }
 
-.stockInput {
-  width: 80px;
-  padding: 8px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
+.quantityInput {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
 }
 
 .status {
