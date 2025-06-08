@@ -25,7 +25,7 @@ export const addToCart = (item) => {
       quantity: 1,
       seller: item.seller ? `${item.seller.name} ${item.seller.surname}` : 'Unknown Seller',
       image: item.photo_urls?.[0]?.photo_url || '/placeholder.jpg',
-      stock: item.stock || 1
+      maxQuantity: item.quantity || 1
     });
   }
 
@@ -45,7 +45,7 @@ export const removeFromCart = (itemId) => {
 export const updateCartItemQuantity = (itemId, quantity) => {
   const cart = getCartItems();
   const updatedCart = cart.map(item => 
-    item.id === itemId ? { ...item, quantity: Math.max(1, Math.min(quantity, item.stock)) } : item
+    item.id === itemId ? { ...item, quantity: Math.max(1, Math.min(quantity, item.maxQuantity)) } : item
   );
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
   return updatedCart;
