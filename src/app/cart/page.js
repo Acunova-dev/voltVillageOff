@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import styles from './page.module.css';
 import NavigationDrawer from '../../components/NavigationDrawer';
-import { getCartItems, updateCartItemQuantity, removeFromCart } from '../../utils/cartStorage';
+import { getCartItems, updateCartItemQuantity, removeFromCart } from '@/utils/cartStorage';
+
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -49,7 +50,7 @@ export default function Cart() {
                     <i className="fas fa-user"></i> Sold by {item.seller}
                   </p>
                   <p className={styles.stock}>
-                    <i className="fas fa-box"></i> {item.stock} available
+                    <i className="fas fa-box"></i> {item.maxQuantity} available
                   </p>
                 </div>
 
@@ -64,7 +65,7 @@ export default function Cart() {
                   <span>{item.quantity}</span>
                   <button 
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    disabled={item.quantity >= item.stock}
+                    disabled={item.quantity >= item.maxQuantity}
                     className={styles.quantityButton}
                   >
                     <i className="fas fa-plus"></i>

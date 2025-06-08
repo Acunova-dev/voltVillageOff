@@ -16,15 +16,10 @@
   font-family: var(--font-geist-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  .page {
-    --gray-rgb: 255, 255, 255;
-    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
-    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-  }
+/* Light theme variables */
+.page {
+  --button-primary-hover: #383838;
+  --button-secondary-hover: #f2f2f2;
 }
 
 .main {
@@ -161,12 +156,6 @@ a.secondary {
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: brightness(0) invert(1);
-  }
-}
-
 .container {
   display: flex;
   min-height: 100vh;
@@ -215,12 +204,14 @@ a.secondary {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  color: white;
 }
 
 .leftPanel h2 {
   font-size: 2.5rem;
   margin-bottom: 1.5rem;
   font-weight: 600;
+  color: white;
 }
 
 .subtitle {
@@ -376,7 +367,7 @@ a.secondary {
   }
 
   .logoContainer {
-    margin-bottom: 2rem;
+    margin-bottom: 0.8rem;
   }
 
   .leftPanel h1, .leftPanel h2 {
@@ -392,50 +383,45 @@ a.secondary {
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: brightness(0) invert(1);
-  }
+/* Light theme styles */
+.rightPanel {
+  background: white;
+}
 
-  .rightPanel {
-    background: #1a1a1a;  /* Dark background */
-  }
+.formGroup label {
+  color: #1a1a1a;
+}
 
-  .formGroup label {
-    color: #ffffff;  /* Pure white for maximum contrast */
-  }
+.terms {
+  color: #1a1a1a;
+}
 
-  .terms {
-    color: #ffffff;  /* Pure white for maximum contrast */
-  }
+.formGroup input,
+.formGroup select {
+  background-color: white;
+  border-color: #E5E7EB;
+  color: #1a1a1a;
+}
 
-  .formGroup input,
-  .formGroup select {
-    background-color: #2d2d2d;
-    border-color: #404040;
-    color: #ffffff;
-  }
+.formGroup input::placeholder,
+.formGroup select::placeholder {
+  color: #9CA3AF;
+}
 
-  .formGroup input::placeholder,
-  .formGroup select::placeholder {
-    color: #a0a0a0;  /* Darker placeholder for better contrast */
-  }
+.formContainer h2 {
+  color: #1a1a1a;
+}
 
-  .formContainer h2 {
-    color: #ffffff;  /* Pure white */
-  }
+.signInBtn {
+  background: white;
+  color: #004AAD;
+  border: 1px solid #004AAD;
+}
 
-  .signInBtn {
-    background: transparent;
-    color: #ffffff;
-    border: 1px solid #ffffff;
-  }
+.signInBtn:hover {
+  background: #f8fafc;
+}
 
-  .signInBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .terms a {
-    color: #66b3ff;  /* Brighter blue for dark mode links */
-  }
+.terms a {
+  color: #004AAD;
 }

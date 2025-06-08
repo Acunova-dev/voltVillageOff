@@ -10,7 +10,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
     title: '',
     description: '',
     price: '',
-    stock: 1,
+    quantity: 1,
     category: '',
     condition: '',
     location: '',
@@ -29,6 +29,7 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
       [name]: value
     }));
   };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -39,7 +40,9 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
       setError('Please upload at least one photo');
       setLoading(false);
       return;
-    }    // Validate other required fields (description is optional)
+    }
+
+    // Validate other required fields (description is optional)
     const requiredFields = ['title', 'price', 'category', 'condition', 'location'];
     const missingFields = requiredFields.filter(field => !formData[field]);
     if (missingFields.length > 0) {
@@ -54,12 +57,11 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
         title: formData.title.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        quantity: parseInt(formData.quantity),
         category: formData.category,
         condition: formData.condition,
         location: formData.location.trim(),
         listing_status: 'active',
-        // Format photo_urls as an array of strings (URLs)
         photo_urls: formData.photo_urls.map(photo => photo.photo_url)
       };
 
@@ -171,12 +173,12 @@ const CreateListingModal = ({ onClose, onSubmit }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="stock">Stock </label>
+              <label htmlFor="quantity">Quantity </label>
               <input
                 type="number"
-                id="stock"
-                name="stock"
-                value={formData.stock}
+                id="quantity"
+                name="quantity"
+                value={formData.quantity}
                 onChange={handleChange}
                 required
                 min="1"

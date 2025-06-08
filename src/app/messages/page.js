@@ -695,7 +695,6 @@ function MessagesContent() {
                         className={styles.textInput}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
                       />
                       <button 
                         className={styles.sendButton}

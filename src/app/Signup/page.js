@@ -61,15 +61,14 @@ export default function SignUp() {
     <div className={styles.container}>
       {isLoading && <LoadingSpinner fullScreen />}
       <div className={styles.leftPanel}>
-        <div className={styles.logoContainer}>
+        <div className={styles.logoContainer}>          
           <Image
-            src="/vercel.svg"
-            alt="Logo"
-            width={40}
-            height={40}
-            className={styles.logo}
-          />
-          <h2>voltVillage</h2>
+                        src="/logo official.png"
+                        alt="voltVillage Logo"
+                        width={250}
+                        height={60}
+                        priority
+                      />
         </div>
         <h1>Welcome to</h1>
         <h2>voltVillage</h2>
