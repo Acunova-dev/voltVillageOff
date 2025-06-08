@@ -140,6 +140,7 @@
 
 .tableCell {
   padding: 0 8px;
+  color: #333;
 }
 
 .itemInfo {
@@ -175,6 +176,9 @@
 .stockInput {
   width: 80px;
   padding: 8px;
+  background: white;
+  color: #333;
+  
   border: 2px solid #ddd;
   border-radius: 6px;
   font-size: 0.9rem;

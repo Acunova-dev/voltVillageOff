@@ -130,36 +130,144 @@
 
 .settingsForm {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: clamp(1.5rem, 3vw, 2rem);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.settingsForm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
 }
 
 .formGroup {
-  margin-bottom: clamp(1.25rem, 2.5vw, 1.5rem);
+  margin-bottom: clamp(1.5rem, 2.5vw, 2rem);
+  position: relative;
 }
 
 .formGroup label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-size: clamp(0.9rem, 1.2vw, 1rem);
-  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: #4a5568;
+  font-size: clamp(0.875rem, 1.1vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .formGroup input {
   width: 100%;
-  padding: clamp(0.75rem, 1.5vw, 1rem);
-  border: 2px solid #ddd;
-  border-radius: 8px;
+  padding: clamp(0.875rem, 1.5vw, 1.125rem);
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
   font-size: clamp(0.9rem, 1.2vw, 1rem);
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  background-color: #f8fafc;
+  color: #2d3748;
 }
 
 .formGroup input:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #3182ce;
+  box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.15);
+  background-color: white;
+}
+
+.formGroup input:disabled,
+.formGroup input:read-only {
+  background-color: #f8fafc;
+  color: #4a5568;
+  cursor: not-allowed;
+  border-color: #edf2f7;
+}
+
+.select {
+  width: 100%;
+  padding: clamp(0.875rem, 1.5vw, 1.125rem);
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+  color: #2d3748;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 4px rgba(66, 153, 225, 0.15);
+}
+
+.select:hover {
+  border-color: #3182ce;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.editButton, .saveButton, .cancelButton {
+  padding: clamp(0.875rem, 1.5vw, 1.125rem);
+  border: none;
+  border-radius: 10px;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.editButton {
+  background: #3182ce;
+  color: white;
+}
+
+.editButton:hover {
+  background: #2c5282;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(49, 130, 206, 0.2);
+}
+
+.saveButton {
+  background: #48bb78;
+  color: white;
+}
+
+.saveButton:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.2);
+}
+
+.cancelButton {
+  background: #ffffff;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+}
+
+.cancelButton:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.editButton:active,
+.saveButton:active,
+.cancelButton:active {
+  transform: translateY(0);
 }
 
 .saveButton {

@@ -11,7 +11,12 @@ export default function Profile() {
   const [userListings, setUserListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuth();
+  const [formData, setFormData] = useState({
+    phone_number: '',
+    gender: ''
+  });
 
   const fetchUserListings = useCallback(async () => {
     try {
@@ -26,10 +31,35 @@ export default function Profile() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     fetchUserListings();
-  }, [fetchUserListings]);
+    if (user) {
+      setFormData({
+        phone_number: user.phone_number || '',
+        gender: user.gender || ''
+      });
+    }
+  }, [fetchUserListings, user]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      // Here you would make an API call to update the user's profile
+      // await updateUserProfile(formData);
+      setIsEditing(false);
+      // You'd want to refresh the user data here
+    } catch (err) {
+      setError('Failed to update profile');
+      console.error('Error updating profile:', err);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -100,23 +130,55 @@ export default function Profile() {
         </div>
 
         <div className={styles.section}>
-          <h2>Account Settings</h2>
-          <div className={styles.settingsForm}>
+          <h2>Account Settings</h2>          <div className={styles.settingsForm}>
             <div className={styles.formGroup}>
               <label>Email</label>
               <input type="email" value={user?.email || ''} readOnly />
             </div>
             <div className={styles.formGroup}>
               <label>Phone Number</label>
-              <input type="tel" value={user?.phone_number || ''} readOnly />
+              <input
+                type="tel"
+                name="phone_number"
+                value={isEditing ? formData.phone_number : (user?.phone_number || '')}
+                onChange={handleChange}
+                readOnly={!isEditing}
+              />
             </div>
             <div className={styles.formGroup}>
               <label>Gender</label>
-              <input type="text" value={user?.gender || ''} readOnly />
+              {isEditing ? (
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className={styles.select}
+                >
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              ) : (
+                <input type="text" value={user?.gender || ''} readOnly />
+              )}
             </div>
-            <button className={styles.editButton}>
-              Edit Profile
-            </button>
+            <div className={styles.buttonGroup}>
+              {isEditing ? (
+                <>
+                  <button className={styles.cancelButton} onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </button>
+                  <button className={styles.saveButton} onClick={handleSubmit}>
+                    Save Changes
+                  </button>
+                </>
+              ) : (
+                <button className={styles.editButton} onClick={() => setIsEditing(true)}>
+                  Edit Profile
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </main>
