@@ -300,6 +300,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  position: relative;
 }
 
 .chatHeader {
@@ -309,6 +310,12 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgb(245, 245, 245);
+  z-index: 10;
 }
 
 .chatHeader .avatar {
@@ -345,11 +352,11 @@
 .messagesList {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding: 1rem 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 0;
   background: #ffffff;
 }
 
@@ -377,6 +384,8 @@
 }
 
 .messageInput {
+  margin-top: auto;
+  width: 100%;
   padding: clamp(0.75rem, 1.5vw, 1.5rem);
   border-top: 1px solid #eee;
   display: flex;
@@ -384,6 +393,7 @@
   align-items: flex-end;
   flex-shrink: 0;
   background: white;
+  z-index: 10;
 }
 
 .textInput {
@@ -730,4 +740,14 @@
 .conversations {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.mobileChatOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
 }

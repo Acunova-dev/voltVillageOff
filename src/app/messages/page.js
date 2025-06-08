@@ -552,177 +552,254 @@ function MessagesContent() {
   }
 
   return (
-    <div className={styles.container}>
-      <NavigationDrawer />
-      <main className={styles.main}>
-        <div className={styles.messagesContainer}>
-          <div className={`${styles.conversationsList} ${isMobile && showChat ? styles.mobileHidden : ''}`}>
-            <div className={styles.conversationsHeader}>
-              <h2>Messages</h2>
-              <div className={styles.searchWrapper}>
-                <FaSearch className={styles.searchIcon} />
-                <input
-                  type="text"
-                  placeholder="Search conversations..."
-                  className={styles.searchInput}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className={styles.conversations}>
-              {filteredConversations.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <p>No conversations found</p>
-                </div>
-              ) : (
-                filteredConversations.map((conv) => {
-                  const displayUser = conv.user1_id === user?.id ? conv.user2 : conv.user1;
-                  const displayName = getDisplayName({...conv, displayUser});
-                  const isSelected = selectedConversation && 
-                    ((selectedConversation.id && selectedConversation.id === conv.id) ||
-                     (selectedConversation.user2_id && selectedConversation.user2_id === conv.user2_id));
-                  let lastMessageContent = 'No messages yet';
-                  if (conv.messages && conv.messages.length > 0) {
-                    lastMessageContent = conv.messages[conv.messages.length - 1].content;
-                  } else if (conv.lastMessage) {
-                    lastMessageContent = conv.lastMessage;
-                  }
-                  const unreadCount = unreadCounts[conv.id] || 0;
-                  return (
-                    <div
-                      key={conv.id}
-                      className={`${styles.conversationItem} ${conv.unread ? styles.unread : ''} ${isSelected ? styles.selected : ''}`}
-                      onClick={() => {
-                        handleConversationSelect(conv);
-                        setUnreadCounts((counts) => ({ ...counts, [conv.id]: 0 }));
-                      }}
-                    >
-                      <div 
-                        className={styles.avatar}
-                        style={{ backgroundColor: getAvatarColor(displayName) }}
-                      >
-                        {displayName.charAt(0).toUpperCase()}
-                      </div>
-                      <div className={styles.conversationContent}>
-                        <div className={styles.conversationHeader}>
-                          <h3 className={styles.conversationName}>{displayName}</h3>
-                          <span className={styles.timestamp}>{conv.timestamp}</span>
-                          {unreadCount > 0 && (
-                            <span className={styles.unreadBadge}>{unreadCount}</span>
-                          )}
-                        </div>
-                        <div className={styles.lastMessageRow}>
-                          <p className={styles.lastMessage}>
-                            {lastMessageContent}
-                          </p>
-                          {conv.unread && <FaCircle className={styles.unreadDot} />}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-          
-          <div className={`${styles.chatArea} ${isMobile && showChat ? styles.mobileActive : ''}`}>
-            {selectedConversation ? (
-              <div className={styles.chatContent}>
-                <div className={styles.chatHeader}>
-                  {isMobile && (
-                    <button className={styles.backButton} onClick={handleBackToConversations}>
-                      ←
-                    </button>
-                  )}
-                  <div 
-                    className={styles.avatar}
-                    style={{ backgroundColor: getAvatarColor(getDisplayName(selectedConversation)) }}
-                  >
-                    {getDisplayName(selectedConversation).charAt(0).toUpperCase()}
-                  </div>
-                  <div className={styles.chatHeaderInfo}>
-                    <h3>{getDisplayName(selectedConversation)}</h3>
-                    {/* <span className={`${styles.connectionStatus} ${styles[wsState]}`}>
-                      {wsState === 'connected' ? 'Online' : wsState === 'connecting' ? 'Connecting...' : 'Offline'}
-                    </span> */}
-                  </div>
-                </div>
-                
-                <div className={styles.messagesList}>
-                  {messages.length > 0 ? (() => {
-                    let lastDate = null;
-                    return messages.map((msg, idx) => {
-                      const msgDate = msg.created_at.split('T')[0];
-                      const showDivider = !lastDate || lastDate !== msgDate;
-                      lastDate = msgDate;
-                      
-                      return (
-                        <Fragment key={`msg-group-${msg.id || idx}`}>
-                          {showDivider && (
-                            <div className={styles.dateDivider} key={`divider-${msgDate}`}>
-                              {getDateDivider(msg.created_at)}
-                            </div>
-                          )}
-                          <div 
-                            key={`message-${msg.id || idx}`} 
-                            className={
-                              msg.sender_id === user?.id
-                                ? styles.messageItemSent
-                                : styles.messageItemReceived
-                            }
-                          >
-                            <div className={styles.messageContent}>
-                              {msg.message || msg.content}
-                            </div>
-                            <div className={styles.messageMeta}>
-                              <span className={styles.messageTime}>
-                                {getTime(msg.created_at)}
-                              </span>
-                            </div>
-                          </div>
-                        </Fragment>
-                      );
-                    });
-                  })() : (
-                    <div className={styles.messagesPlaceholder}>
-                      <p>Start your conversation with {getDisplayName(selectedConversation)}</p>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-                
-                <div className={styles.messageInput}>
+    <>
+      {/* Normal layout for desktop and mobile conversation list */}
+      <div className={styles.container}>
+        <NavigationDrawer />
+        <main className={styles.main}>
+          <div className={styles.messagesContainer}>
+            <div className={`${styles.conversationsList} ${isMobile && showChat ? styles.mobileHidden : ''}`}>
+              <div className={styles.conversationsHeader}>
+                <h2>Messages</h2>
+                <div className={styles.searchWrapper}>
+                  <FaSearch className={styles.searchIcon} />
                   <input
                     type="text"
-                    placeholder="Type a message..."
-                    className={styles.textInput}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    placeholder="Search conversations..."
+                    className={styles.searchInput}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
-                  <button 
-                    className={styles.sendButton}
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
-                  >
-                    <IoMdSend />
-                  </button>
                 </div>
               </div>
-            ) : (
-              <div className={styles.chatPlaceholder}>
-                <div className={styles.placeholderContent}>
-                  <div className={styles.placeholderIcon}>💬</div>
-                  <h3>Select a conversation to start messaging</h3>
-                  <p>Choose from your existing conversations or start a new one</p>
-                </div>
+              <div className={styles.conversations}>
+                {filteredConversations.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <p>No conversations found</p>
+                  </div>
+                ) : (
+                  filteredConversations.map((conv) => {
+                    const displayUser = conv.user1_id === user?.id ? conv.user2 : conv.user1;
+                    const displayName = getDisplayName({...conv, displayUser});
+                    const isSelected = selectedConversation && 
+                      ((selectedConversation.id && selectedConversation.id === conv.id) ||
+                       (selectedConversation.user2_id && selectedConversation.user2_id === conv.user2_id));
+                    let lastMessageContent = 'No messages yet';
+                    if (conv.messages && conv.messages.length > 0) {
+                      lastMessageContent = conv.messages[conv.messages.length - 1].content;
+                    } else if (conv.lastMessage) {
+                      lastMessageContent = conv.lastMessage;
+                    }
+                    const unreadCount = unreadCounts[conv.id] || 0;
+                    return (
+                      <div
+                        key={conv.id}
+                        className={`${styles.conversationItem} ${conv.unread ? styles.unread : ''} ${isSelected ? styles.selected : ''}`}
+                        onClick={() => {
+                          handleConversationSelect(conv);
+                          setUnreadCounts((counts) => ({ ...counts, [conv.id]: 0 }));
+                        }}
+                      >
+                        <div 
+                          className={styles.avatar}
+                          style={{ backgroundColor: getAvatarColor(displayName) }}
+                        >
+                          {displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className={styles.conversationContent}>
+                          <div className={styles.conversationHeader}>
+                            <h3 className={styles.conversationName}>{displayName}</h3>
+                            <span className={styles.timestamp}>{conv.timestamp}</span>
+                            {unreadCount > 0 && (
+                              <span className={styles.unreadBadge}>{unreadCount}</span>
+                            )}
+                          </div>
+                          <div className={styles.lastMessageRow}>
+                            <p className={styles.lastMessage}>
+                              {lastMessageContent}
+                            </p>
+                            {conv.unread && <FaCircle className={styles.unreadDot} />}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+            
+            {/* On desktop, or mobile with no chat open, show chat area here */}
+            {(!isMobile || !showChat) && (
+              <div className={`${styles.chatArea} ${isMobile && showChat ? styles.mobileActive : ''}`}>
+                {selectedConversation ? (
+                  <div className={styles.chatContent}>
+                    <div className={styles.chatHeader}>
+                      <div 
+                        className={styles.avatar}
+                        style={{ backgroundColor: getAvatarColor(getDisplayName(selectedConversation)) }}
+                      >
+                        {getDisplayName(selectedConversation).charAt(0).toUpperCase()}
+                      </div>
+                      <div className={styles.chatHeaderInfo}>
+                        <h3>{getDisplayName(selectedConversation)}</h3>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.messagesList}>
+                      {messages.length > 0 ? (() => {
+                        let lastDate = null;
+                        return messages.map((msg, idx) => {
+                          const msgDate = msg.created_at.split('T')[0];
+                          const showDivider = !lastDate || lastDate !== msgDate;
+                          lastDate = msgDate;
+                          
+                          return (
+                            <Fragment key={`msg-group-${msg.id || idx}`}>
+                              {showDivider && (
+                                <div className={styles.dateDivider} key={`divider-${msgDate}`}>
+                                  {getDateDivider(msg.created_at)}
+                                </div>
+                              )}
+                              <div 
+                                key={`message-${msg.id || idx}`} 
+                                className={
+                                  msg.sender_id === user?.id
+                                    ? styles.messageItemSent
+                                    : styles.messageItemReceived
+                                }
+                              >
+                                <div className={styles.messageContent}>
+                                  {msg.message || msg.content}
+                                </div>
+                                <div className={styles.messageMeta}>
+                                  <span className={styles.messageTime}>
+                                    {getTime(msg.created_at)}
+                                  </span>
+                                </div>
+                              </div>
+                            </Fragment>
+                          );
+                        });
+                      })() : (
+                        <div className={styles.messagesPlaceholder}>
+                          <p>Start your conversation with {getDisplayName(selectedConversation)}</p>
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                    
+                    <div className={styles.messageInput}>
+                      <input
+                        type="text"
+                        placeholder="Type a message..."
+                        className={styles.textInput}
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                      />
+                      <button 
+                        className={styles.sendButton}
+                        onClick={handleSendMessage}
+                        disabled={!newMessage.trim()}
+                      >
+                        <IoMdSend />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.chatPlaceholder}>
+                    <div className={styles.placeholderContent}>
+                      <div className={styles.placeholderIcon}>💬</div>
+                      <h3>Select a conversation to start messaging</h3>
+                      <p>Choose from your existing conversations or start a new one</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
+        </main>
+      </div>
+      {/* On mobile, when chat is open, render chat overlay */}
+      {isMobile && showChat && (
+        <div className={styles.mobileChatOverlay}>
+          <div className={styles.chatContent}>
+            <div className={styles.chatHeader}>
+              <button className={styles.backButton} onClick={handleBackToConversations}>
+                ←
+              </button>
+              <div 
+                className={styles.avatar}
+                style={{ backgroundColor: getAvatarColor(getDisplayName(selectedConversation)) }}
+              >
+                {getDisplayName(selectedConversation).charAt(0).toUpperCase()}
+              </div>
+              <div className={styles.chatHeaderInfo}>
+                <h3>{getDisplayName(selectedConversation)}</h3>
+              </div>
+            </div>
+            <div className={styles.messagesList}>
+              {messages.length > 0 ? (() => {
+                let lastDate = null;
+                return messages.map((msg, idx) => {
+                  const msgDate = msg.created_at.split('T')[0];
+                  const showDivider = !lastDate || lastDate !== msgDate;
+                  lastDate = msgDate;
+                  return (
+                    <Fragment key={`msg-group-${msg.id || idx}`}>
+                      {showDivider && (
+                        <div className={styles.dateDivider} key={`divider-${msgDate}`}>
+                          {getDateDivider(msg.created_at)}
+                        </div>
+                      )}
+                      <div 
+                        key={`message-${msg.id || idx}`} 
+                        className={
+                          msg.sender_id === user?.id
+                            ? styles.messageItemSent
+                            : styles.messageItemReceived
+                        }
+                      >
+                        <div className={styles.messageContent}>
+                          {msg.message || msg.content}
+                        </div>
+                        <div className={styles.messageMeta}>
+                          <span className={styles.messageTime}>
+                            {getTime(msg.created_at)}
+                          </span>
+                        </div>
+                      </div>
+                    </Fragment>
+                  );
+                });
+              })() : (
+                <div className={styles.messagesPlaceholder}>
+                  <p>Start your conversation with {getDisplayName(selectedConversation)}</p>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className={styles.messageInput}>
+              <input
+                type="text"
+                placeholder="Type a message..."
+                className={styles.textInput}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              <button 
+                className={styles.sendButton}
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim()}
+              >
+                <IoMdSend />
+              </button>
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+      )}
+    </>
   );
 }
 
