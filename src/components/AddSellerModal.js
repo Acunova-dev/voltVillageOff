@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import styles from './AddSellerModal.module.css';
 import { FaTimes } from 'react-icons/fa';
+import { externalSellers } from '@/utils/api';
 
 const AddSellerModal = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -29,34 +30,12 @@ const AddSellerModal = ({ onClose, onSubmit }) => {
     setError(null);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        const errorMsg = 'Authentication token not found. Please log in again.';
-        setError(errorMsg);
-        return;
-      }
-
-      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/ext-seller/', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `Failed to add seller: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await externalSellers.create(formData);
       onSubmit(data);
       onClose();
       setError(null);
     } catch (err) {
-      const errorMsg = err.message || 'Failed to add seller';
+      const errorMsg = err.response?.data?.detail || err.message || 'Failed to add seller';
       setError(errorMsg);
       console.error('Error adding seller:', err);
     } finally {

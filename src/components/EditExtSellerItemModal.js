@@ -4,7 +4,9 @@ import { AdvancedImage, responsive, placeholder } from '@cloudinary/react';
 import styles from './EditExtSellerItemModal.module.css';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
 import { cld, getOptimizedImageUrl } from '@/utils/cloudinary';
-import { FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaTimes, FaSpinner, FaUpload, FaTrash } from 'react-icons/fa';
+import { CldUploadWidget } from 'next-cloudinary';
+import { items } from '@/utils/api';
 
 const EditExtSellerItemModal = ({ item, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -82,10 +84,10 @@ const EditExtSellerItemModal = ({ item, onClose, onSubmit }) => {
       if (!token) {
         const errorMsg = 'Authentication token not found. Please log in again.';
         setError(errorMsg);
-        setLoading(false);
         return;
       }
 
+      // Format the data according to API expectations
       const submissionData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -102,33 +104,12 @@ const EditExtSellerItemModal = ({ item, onClose, onSubmit }) => {
 
       console.log('Submitting updated item data:', submissionData);
 
-      const response = await fetch(`https://voltvillage-api.onrender.com/api/v1/items/${item.id}`, {
-        method: 'PUT',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(submissionData)
-      });
-
-      if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch (jsonError) {
-          console.error('Failed to parse error response:', jsonError);
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
-        }
-        throw new Error(errorData.detail || `Failed to update item: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await items.update(item.id, submissionData);
       onSubmit(data);
       onClose();
     } catch (err) {
       console.error('Submission error:', err);
-      setError(err.message || 'Failed to update item');
+      setError(err.response?.data?.detail || err.message || 'Failed to update item');
     } finally {
       setLoading(false);
     }
@@ -347,7 +328,7 @@ const EditExtSellerItemModal = ({ item, onClose, onSubmit }) => {
                         className={styles.removeImage}
                         onClick={() => removeImage(index)}
                       >
-                        <FaTimes />
+                        <FaTrash />
                       </button>
                     </div>
                   ))}

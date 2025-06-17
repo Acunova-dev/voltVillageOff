@@ -5,6 +5,9 @@ import styles from './AddExtSellerItemModal.module.css';
 import CloudinaryUploadWidget from './CloudinaryUploadWidget';
 import { cld, getOptimizedImageUrl } from '@/utils/cloudinary';
 import { FaTimes, FaPlus, FaSpinner } from 'react-icons/fa';
+import { FaUpload, FaTrash } from 'react-icons/fa';
+import { CldUploadWidget } from 'next-cloudinary';
+import { externalSellers } from '@/utils/api';
 
 const AddExtSellerItemModal = ({ sellerId, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -34,28 +37,11 @@ const AddExtSellerItemModal = ({ sellerId, onClose, onSubmit }) => {
     setLoading(true);
     setError(null);
 
-    // Validate required fields
-    if (formData.photo_urls.length === 0) {
-      setError('Please upload at least one photo');
-      setLoading(false);
-      return;
-    }
-
-    // Validate other required fields (description is optional)
-    const requiredFields = ['title', 'price', 'category', 'condition', 'location'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    if (missingFields.length > 0) {
-      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
-      setLoading(false);
-      return;
-    }
-
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         const errorMsg = 'Authentication token not found. Please log in again.';
         setError(errorMsg);
-        setLoading(false);
         return;
       }
 
@@ -74,33 +60,12 @@ const AddExtSellerItemModal = ({ sellerId, onClose, onSubmit }) => {
 
       console.log('Submitting item data:', submissionData);
 
-      const response = await fetch(`https://voltvillage-api.onrender.com/api/v1/ext-seller/ext-seller/item?external_seller=${sellerId}`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(submissionData)
-      });
-
-      if (!response.ok) {
-        let errorData;
-        try {
-          errorData = await response.json();
-        } catch (jsonError) {
-          console.error('Failed to parse error response:', jsonError);
-          throw new Error(`Server error: ${response.status} ${response.statusText}`);
-        }
-        throw new Error(errorData.detail || `Failed to create item: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await externalSellers.createItem(sellerId, submissionData);
       onSubmit(data);
       onClose();
     } catch (err) {
       console.error('Submission error:', err);
-      setError(err.message || 'Failed to create item');
+      setError(err.response?.data?.detail || err.message || 'Failed to create item');
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import { FaSearch, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import AddSellerModal from '@/components/AddSellerModal';
 import EditSellerModal from '@/components/EditSellerModal';
 import Link from 'next/link';
+import { externalSellers } from '@/utils/api';
 
 export default function ManageSellers() {
   const [sellers, setSellers] = useState([]);
@@ -24,60 +25,56 @@ export default function ManageSellers() {
     try {
       setLoading(true);
       setError(null);
-      const token = localStorage.getItem('token');
       
-      if (!token) {
-        const errorMsg = 'Authentication token not found. Please log in again.';
-        setError(errorMsg);
-        return;
-      }
-
-      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/ext-seller/?skip=0&limit=100', {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await externalSellers.getAll({ skip: 0, limit: 100 });
+      console.log('API Response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response.data type:', typeof response.data);
+      console.log('Response.data:', response.data);
       
-      if (!response.ok) {
-        let errorMsg;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.detail || `Server error: ${response.status}`;
-        } catch {
-          errorMsg = `Failed to fetch sellers: ${response.status} ${response.statusText}`;
-        }
-        setError(errorMsg);
-        return;
-      }
+      // Ensure we're setting an array - handle different response structures
+      const sellersData = Array.isArray(response.data) ? response.data : 
+                         Array.isArray(response) ? response : [];
       
-      const data = await response.json();
-      setSellers(data);
+      console.log('Processed sellersData:', sellersData);
+      setSellers(sellersData);
       setError(null);
     } catch (err) {
-      const errorMsg = err.message || 'An unexpected error occurred while fetching sellers';
+      const errorMsg = err.response?.data?.detail || err.message || 'An unexpected error occurred while fetching sellers';
       setError(errorMsg);
       console.error('Error fetching sellers:', err);
+      // Ensure sellers is still an array even on error
+      setSellers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredSellers = sellers.filter(seller =>
+  // Ensure sellers is always an array before filtering
+  const filteredSellers = Array.isArray(sellers) ? sellers.filter(seller =>
     seller.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     seller.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     seller.phone?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const handleAddSeller = () => {
     setError(null);
     setShowAddModal(true);
   };
 
-  const handleAddSellerSubmit = (newSeller) => {
-    setSellers(prevSellers => [...prevSellers, newSeller]);
-    alert('Seller added successfully');
-    setError(null);
+  const handleAddSellerSubmit = async (newSeller) => {
+    try {
+      // Refetch sellers from server to get the most up-to-date data
+      await fetchSellers();
+      alert('Seller added successfully');
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing sellers after add:', err);
+      // Fallback to local state update if refetch fails
+      setSellers(prevSellers => [...prevSellers, newSeller]);
+      alert('Seller added successfully');
+      setError(null);
+    }
   };
 
   const handleEditSeller = (seller) => {
@@ -86,14 +83,23 @@ export default function ManageSellers() {
     setShowEditModal(true);
   };
 
-  const handleEditSellerSubmit = (updatedSeller) => {
-    setSellers(prevSellers => 
-      prevSellers.map(seller => 
-        seller.id === updatedSeller.id ? updatedSeller : seller
-      )
-    );
-    alert('Seller updated successfully');
-    setError(null);
+  const handleEditSellerSubmit = async (updatedSeller) => {
+    try {
+      // Refetch sellers from server to get the most up-to-date data
+      await fetchSellers();
+      alert('Seller updated successfully');
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing sellers after edit:', err);
+      // Fallback to local state update if refetch fails
+      setSellers(prevSellers => 
+        prevSellers.map(seller => 
+          seller.id === updatedSeller.id ? updatedSeller : seller
+        )
+      );
+      alert('Seller updated successfully');
+      setError(null);
+    }
   };
 
   const handleDeleteSeller = async (seller) => {
@@ -103,37 +109,12 @@ export default function ManageSellers() {
       }
       setError(null);
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        const errorMsg = 'Authentication token not found. Please log in again.';
-        setError(errorMsg);
-        return;
-      }
-
-      const response = await fetch(`https://voltvillage-api.onrender.com/api/v1/ext-seller/${seller.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        let errorMsg;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.detail || `Server error: ${response.status}`;
-        } catch {
-          errorMsg = `Failed to delete seller: ${response.status} ${response.statusText}`;
-        }
-        setError(errorMsg);
-        return;
-      }
-
+      await externalSellers.delete(seller.id);
       setSellers(prevSellers => prevSellers.filter(s => s.id !== seller.id));
       alert('Seller deleted successfully');
       setError(null);
     } catch (err) {
-      const errorMsg = err.message || 'An unexpected error occurred while deleting seller';
+      const errorMsg = err.response?.data?.detail || err.message || 'An unexpected error occurred while deleting seller';
       setError(errorMsg);
       console.error('Error deleting seller:', err);
     }

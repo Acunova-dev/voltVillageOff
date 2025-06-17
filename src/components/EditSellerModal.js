@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import styles from './EditSellerModal.module.css';
 import { FaTimes } from 'react-icons/fa';
+import { externalSellers } from '@/utils/api';
 
 const EditSellerModal = ({ seller, onClose, onSubmit }) => {
     console.log(seller);
@@ -42,33 +43,12 @@ const EditSellerModal = ({ seller, onClose, onSubmit }) => {
     setError(null);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        const errorMsg = 'Authentication token not found. Please log in again.';
-        setError(errorMsg);
-        return;
-      }
-
-      const response = await fetch(`https://voltvillage-api.onrender.com/api/v1/ext-seller/${seller.id}`, {
-        method: 'PATCH',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-      console.log(response);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || `Failed to update seller: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await externalSellers.update(seller.id, formData);
+      console.log(data);
       onSubmit(data);
       onClose();
     } catch (err) {
-      const errorMsg = err.message || 'Failed to update seller';
+      const errorMsg = err.response?.data?.detail || err.message || 'Failed to update seller';
       setError(errorMsg);
       console.error('Error updating seller:', err);
     } finally {

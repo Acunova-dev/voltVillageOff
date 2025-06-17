@@ -15,8 +15,17 @@ import {
   FaCalendarAlt,
   FaArrowUp,
   FaArrowDown,
-  FaSpinner
+  FaSpinner,
+  FaEye,
+  FaEyeSlash,
+  FaUserCheck,
+  FaUserTimes,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaClock,
+  FaStar
 } from 'react-icons/fa';
+import { analytics } from '@/utils/api';
 
 export default function Dashboard() {
   const { user, isLoading, isInitialized } = useAuth();
@@ -47,27 +56,11 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-
-      const response = await fetch('https://voltvillage-api.onrender.com/api/v1/analytics/dashboard', {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch dashboard data: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setDashboardData(data);
+      const response = await analytics.getDashboard();
+      setDashboardData(response.data);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
-      setError(err.message || 'Failed to load dashboard data');
+      setError(err.response?.data?.detail || err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }

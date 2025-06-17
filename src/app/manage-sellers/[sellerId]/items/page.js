@@ -1,31 +1,30 @@
 "use client"
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import NavigationDrawer from '@/components/NavigationDrawer';
-import { FaArrowLeft } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
-import { FaPlus } from 'react-icons/fa';
+import { FaArrowLeft, FaPlus, FaEdit, FaTrash, FaUndo, FaTrashAlt } from 'react-icons/fa';
 import AddExtSellerItemModal from '@/components/AddExtSellerItemModal';
-import { FaEdit, FaTrash } from 'react-icons/fa';
 import EditExtSellerItemModal from '@/components/EditExtSellerItemModal';
+import { externalSellers, items as itemsAPI } from '@/utils/api';
 
 export default function SellerItemsPage() {
-  const { sellerId } = useParams();
+  const params = useParams();
   const router = useRouter();
-  const [items, setItems] = useState([]);
-  const [sellerName, setSellerName] = useState('Seller');
-  const [externalSeller, setExternalSeller] = useState(null);
+  const sellerId = params.sellerId;
+  const [sellerItems, setSellerItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sellerName, setSellerName] = useState('Seller');
+  const [externalSeller, setExternalSeller] = useState(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showEditItemModal, setShowEditItemModal] = useState(false);
   const [currentItemToEdit, setCurrentItemToEdit] = useState(null);
   const [deletingItemId, setDeletingItemId] = useState(null);
 
   // Separate active and deleted items
-  const activeItems = items.filter(item => !item.is_deleted);
-  const deletedItems = items.filter(item => item.is_deleted);
+  const activeItems = Array.isArray(sellerItems) ? sellerItems.filter(item => !item.is_deleted) : [];
+  const deletedItems = Array.isArray(sellerItems) ? sellerItems.filter(item => item.is_deleted) : [];
 
   useEffect(() => {
     if (sellerId) {
@@ -37,57 +36,46 @@ export default function SellerItemsPage() {
     try {
       setLoading(true);
       setError(null);
-      const token = localStorage.getItem('token');
       
-      if (!token) {
-        const errorMsg = 'Authentication token not found. Please log in again.';
-        setError(errorMsg);
-        return;
-      }
-
-      const response = await fetch(`https://voltvillage-api.onrender.com/api/v1/ext-seller/${sellerId}/items?skip=0&limit=100`, {
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await externalSellers.getItems(sellerId, { skip: 0, limit: 100 });
+      // Ensure we're setting an array - handle different response structures
+      const itemsData = Array.isArray(response.data) ? response.data : 
+                       Array.isArray(response) ? response : [];
       
-      if (!response.ok) {
-        let errorMsg;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.detail || `Server error: ${response.status}`;
-        } catch {
-          errorMsg = `Failed to fetch items: ${response.status} ${response.statusText}`;
+      setSellerItems(itemsData);
+      if (itemsData.length > 0) {
+        if (itemsData[0].seller && itemsData[0].seller.name) {
+          setSellerName(itemsData[0].seller.name);
         }
-        setError(errorMsg);
-        return;
-      }
-      
-      const data = await response.json();
-      setItems(data);
-      if (data.length > 0) {
-        if (data[0].seller && data[0].seller.name) {
-          setSellerName(data[0].seller.name);
-        }
-        if (data[0].external_seller) {
-          setExternalSeller(data[0].external_seller);
+        if (itemsData[0].external_seller) {
+          setExternalSeller(itemsData[0].external_seller);
         }
       }
       setError(null);
     } catch (err) {
-      const errorMsg = err.message || 'An unexpected error occurred while fetching items';
+      const errorMsg = err.response?.data?.detail || err.message || 'An unexpected error occurred while fetching items';
       setError(errorMsg);
       console.error('Error fetching items:', err);
+      // Ensure items is still an array even on error
+      setSellerItems([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddItemSubmit = (newItem) => {
-    setItems(prevItems => [...prevItems, newItem]);
-    alert('Item added successfully!');
-    setError(null);
+  const handleAddItemSubmit = async (newItem) => {
+    try {
+      // Refetch items from server to get the most up-to-date data
+      await fetchSellerItems();
+      alert('Item added successfully!');
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing items after add:', err);
+      // Fallback to local state update if refetch fails
+      setSellerItems(prevItems => [...prevItems, newItem]);
+      alert('Item added successfully!');
+      setError(null);
+    }
   };
 
   const handleEditItem = (item) => {
@@ -96,14 +84,23 @@ export default function SellerItemsPage() {
     setShowEditItemModal(true);
   };
 
-  const handleEditItemSubmit = (updatedItem) => {
-    setItems(prevItems => 
-      prevItems.map(item => 
-        item.id === updatedItem.id ? updatedItem : item
-      )
-    );
-    alert('Item updated successfully!');
-    setError(null);
+  const handleEditItemSubmit = async (updatedItem) => {
+    try {
+      // Refetch items from server to get the most up-to-date data
+      await fetchSellerItems();
+      alert('Item updated successfully!');
+      setError(null);
+    } catch (err) {
+      console.error('Error refreshing items after edit:', err);
+      // Fallback to local state update if refetch fails
+      setSellerItems(prevItems => 
+        prevItems.map(item => 
+          item.id === updatedItem.id ? updatedItem : item
+        )
+      );
+      alert('Item updated successfully!');
+      setError(null);
+    }
   };
 
   const handleDeleteItem = async (item) => {
@@ -114,40 +111,12 @@ export default function SellerItemsPage() {
       setError(null);
       setDeletingItemId(item.id);
 
-      const token = localStorage.getItem('token');
-      if (!token) {
-        const errorMsg = 'Authentication token not found. Please log in again.';
-        setError(errorMsg);
-        setDeletingItemId(null);
-        return;
-      }
-
-      const response = await fetch(`https://voltvillage-api.onrender.com/api/v1/items/${item.id}`, {
-        method: 'DELETE',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        let errorMsg;
-        try {
-          const errorData = await response.json();
-          errorMsg = errorData.detail || `Server error: ${response.status}`;
-        } catch {
-          errorMsg = `Failed to delete item: ${response.status} ${response.statusText}`;
-        }
-        setError(errorMsg);
-        setDeletingItemId(null);
-        return;
-      }
-
-      setItems(prevItems => prevItems.filter(i => i.id !== item.id));
+      await itemsAPI.delete(item.id);
+      setSellerItems(prevItems => prevItems.filter(i => i.id !== item.id));
       setError(null);
       setDeletingItemId(null);
     } catch (err) {
-      const errorMsg = err.message || 'An unexpected error occurred while deleting item';
+      const errorMsg = err.response?.data?.detail || err.message || 'An unexpected error occurred while deleting item';
       setError(errorMsg);
       setDeletingItemId(null);
       console.error('Error deleting item:', err);
