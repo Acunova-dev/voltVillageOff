@@ -8,12 +8,12 @@ import { items } from '../../utils/api';
 import { useRouter } from 'next/navigation';
 
 export default function ManageListings() {
+  const router = useRouter();
   const [userListings, setUserListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const router = useRouter();
   const [filters, setFilters] = useState({
     category: '',
     condition: '',
@@ -113,6 +113,10 @@ export default function ManageListings() {
     setShowCreateModal(true);
   };
 
+  const handleManageSellers = () => {
+    router.push('/manage-sellers');
+  };
+
   if (error) {
     return (
       <div className={styles.container}>
@@ -131,9 +135,14 @@ export default function ManageListings() {
       <main className={styles.main}>
         <div className={styles.header}>
           <h1>Manage Your Listings</h1>
-          <button className={styles.createButton} onClick={handleButtonClick}>
-            <i className="fas fa-plus"></i> Create New Listing
-          </button>
+          <div className={styles.buttonGroup}>
+            <button className={styles.createButton} onClick={handleButtonClick}>
+              <i className="fas fa-plus"></i> Create New Listing
+            </button>
+            <button className={styles.createButton} onClick={() => router.push('/manage-sellers')}>
+              <i className="fas fa-users"></i> Manage External Sellers
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -236,17 +245,12 @@ export default function ManageListings() {
                     </span>
                   </div>
                   <div className={styles.tableCell}>
-                    <div className={styles.actions}>
-                      <button className={styles.actionButton} onClick={() => {}}>
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className={styles.actionButton} onClick={() => handleDelete(listing.id)}>
-                        <i className="fas fa-trash"></i>
-                      </button>
-                      <button className={styles.actionButton} onClick={() => {}}>
-                        <i className="fas fa-chart-line"></i>
-                      </button>
-                    </div>
+                    <button 
+                      className={styles.deleteButton}
+                      onClick={() => handleDelete(listing.id)}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
                   </div>
                 </div>
               ))}
