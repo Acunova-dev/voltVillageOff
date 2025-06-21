@@ -14,6 +14,7 @@ const NavigationDrawer = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  console.log(user);
   const handleLogout = () => {
     logout();
     router.push('/SignIn');
@@ -70,6 +71,13 @@ const NavigationDrawer = () => {
 
             {user && (
               <>
+                {/* Dashboard for Superusers */}
+                {user.is_superuser && (
+                  <Link href="/dashboard" className={`${styles.navLink} ${isActive('/dashboard') ? styles.active : ''}`}>
+                    <i className="fas fa-chart-line"></i> Dashboard
+                  </Link>
+                )}
+
                 {/* Communication Dropdown */}
                 <div className={styles.dropdownContainer}>
                   <div className={`${styles.dropdownButton} ${isActiveGroup(['/messages', '/requests']) ? styles.active : ''}`}>
@@ -145,6 +153,17 @@ const NavigationDrawer = () => {
 
           {user && (
             <>
+              {/* Dashboard for Superusers */}
+              {user.is_superuser && (
+                <Link 
+                  href="/dashboard" 
+                  className={`${styles.mobileLink} ${isActive('/dashboard') ? styles.active : ''}`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <i className="fas fa-chart-line"></i> Dashboard
+                </Link>
+              )}
+
               <Link 
                 href="/manage-listings" 
                 className={`${styles.mobileLink} ${isActive('/manage-listings') ? styles.active : ''}`}

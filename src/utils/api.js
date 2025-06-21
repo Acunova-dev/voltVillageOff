@@ -103,6 +103,21 @@ export const forgotPassword = async (email) => {
   }
 };
 
+// External Sellers API
+export const externalSellers = {
+  getAll: (params = {}) => client.get('/ext-seller/', { params }),
+  getById: (id) => client.get(`/ext-seller/${id}`),
+  create: (data) => client.post('/ext-seller/', data),
+  update: (id, data) => client.patch(`/ext-seller/${id}`, data),
+  delete: (id) => client.delete(`/ext-seller/${id}`),
+  getItems: (sellerId, params = {}) => client.get(`/ext-seller/${sellerId}/items`, { params }),
+  createItem: (sellerId, data) => client.post(`/ext-seller/ext-seller/item?external_seller=${sellerId}`, data),
+};
+
+// Analytics API
+export const analytics = {
+  getDashboard: () => client.get('/analytics/dashboard'),
+};
 
 export const items = {
   getAll: async (params) => {
